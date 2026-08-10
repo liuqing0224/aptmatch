@@ -1,0 +1,4 @@
+interface:
+  display_name: "飞书招聘 Playwright 采集"
+  short_description: "独立 Chromium 扫码登录并按职位采集飞书招聘候选人简历"
+  default_prompt: "Use $feishu-recruit-playwright to collect Feishu Hire candidates for a recruiter position."

@@ -1,0 +1,173 @@
+# 学习沉淀
+
+每次任务自动追加，人工可在 Agent 管理中编辑。
+
+- [2026-08-07] 公司为 example.com 等虚构/示例主体时，公开调研需注明降级，评分以输入材料为准，不因无法调研而降低证据标准
+- [2026-08-07] 简历自称年限与经历时间线矛盾时，应作为风险提示并要求面试确认，不自行推断修正
+- [2026-08-07] 电商/金融数据背景投字节数据平台时，技能栈重合度高的情况下，核心差距通常落在『公司级规模调优』与『元数据/成本治理』两个 JD 高频词，按 medium 处理并给方法论弥补建议，不因规模量级差直接降档
+- [2026-08-07] 简历熟练度措辞（『熟练』vs JD『精通』）与年限（9 年 vs 5 年要求）并存时，按年限达标、深度待面试验证处理，不因措辞保守而降档
+- [2026-08-07] BOSS直聘 job_detail 详情页存在风控（返回『请稍候』加载页），直接抓取易失败；本次改用公司官网招聘页（如 chinaamc.zhiye.com）及猎聘、聚合招聘站等搜索引擎可达页面作为降级来源，并如实注明来源。
+- [2026-08-07] 猎聘桌面端详情页有反爬（返回空壳页），切换 m.liepin.com 移动端可抓到完整 JD 原文。
+- [2026-08-07] 聚合站（今日招聘网/番禺人才网）转载的企业 JD 可直接抓取，但页面可能标注『信息待核验』等提示，需在 source 中注明转载平台、按原文如实记录。
+- [2026-08-07] 『高级数据工程师』在招聘站常以『高级数据开发/数据仓库/数据平台/数据研发工程师』等近义变体出现，采集时按近义扩展可提高命中率。
+- [2026-08-07] 滴滴国际金融数据岗位调研时，talent.didiglobal.com 详情页为 JS 渲染空壳，可用搜索引擎摘要与财报/行业新闻转载作为降级来源，并如实注明
+- [2026-08-07] 金融科技背景候选人投递大厂国际金融数据岗时，风控实时特征计算经验是最强对口信号，应优先写入 strengths 与 evidence；『英语口语』与『数据湖/湖仓一体』是国际业务团队常见隐形门槛，按 medium 处理并在 questions 中确认
+- [2026-08-07] MDPI/曼迪匹艾数据工程师 JD 属『数据湖+检索』方向（Iceberg/Delta Lake/Solr/DataHub），与候选人常见的实时流计算栈（Flink/ClickHouse）重合点集中在建模/分层/ETL/调度，此类差异按 medium 处理并给出方法论弥补建议
+- [2026-08-07] 外资/离岸外包背景公司的 JD 常把『英语书面口语』列为第一条硬要求且面试含外籍面试官；简历无英语能力证据时应将其标为 high 风险，并给出英文自我介绍+英文技术讲解的可执行弥补方案
+- [2026-08-07] 招聘聚合站转载的 MDPI JD 会补充输入材料缺失的条目（如第 8 条沟通要求与完整加分项），可作为 JD 原文核实的有效来源，并在 research.source 中注明转载平台
+- [2026-08-07] JD 对学历有硬性门槛（如『重点高校研究生及以上』）而候选人仅为本科时，即使年限与技能高度匹配，也按 high 差距处理并建议主动向 HR/内推确认，不自行推断『经验可弥补学历』
+- [2026-08-07] [2026-08-07] SaaS 行为分析数据平台岗（Ptengine 类）与传统电商/金融数据岗的核心差异通常落在『行为数据模型（User/Session/Event）』、『统一画像/分群』、『ES/Doris 分析引擎』与『数据被 AI Agent 消费』四条线；技能栈重合度高时前三项按 medium 处理，最后一条按『底色/热情』评估并建议准备 Agent 数据服务化方案
+- [2026-08-07] 证券/基金行业数据治理岗常见显性硬门槛是『研究生以上学历』+『证券行业数据治理经验』，猎聘公开页还会附加『优先看券商出来的』；电商/泛金融科技候选人即使数据平台技能强，也应将这两项标为 high 差距，并先通过猎头确认学历弹性，避免无效投递
+- [2026-08-07] 同一猎头会为同一客户发布多个版本岗位页（JD 相同但公司规模/所有制信息被不同匿名化，如『10000+私营』vs『1000-2000 国企上市公司』），交叉抓取可发现附加要求与招聘备注（如『要么侧重数据开发要么侧重证券行业经验』），这类备注是判断硬门槛可谈判性的关键信号
+- [2026-08-07] 猎聘（www.liepin.com 与 m.liepin.com）职位详情页可公开访问，JD 原文完整；职位 URL 形如 https://www.liepin.com/job/{id}.shtml。
+- [2026-08-07] BOSS直聘 PC/移动端职位详情页被风控拦截（仅返回占位/加载页），无法直接采集。
+- [2026-08-07] 看准网（kanzhun.com）职位详情为空壳页无内容；wanmayoucai.com 职位详情页请求超时。
+- [2026-08-07] 北京京东振世信息技术有限公司为京东物流旗下主体，相关数仓岗位在猎聘集中发布，公司简介与京东物流官网一致。
+- [2026-08-07] 猎聘存在已暂停招聘但仍可搜索到的职位（如 job/1913448883.shtml），页面无 JD 内容，需逐条打开详情页核验后才可录入。
+- [2026-08-07] 总分采用加权综合（hard_skills 20%、experience 14%、responsibilities 13%、gate 14%、tech_direction 12%、compensation 8%、culture 8%、stability 6%、company_health 3%、preference 2%），核心契合维度权重高于文化/稳定性/公司风险，避免硬技能缺口大时总分虚高；gate 或 hard_skills 任一低于 40 时 overall 封顶 69；权重方案随报告沉淀便于复核
+- [2026-08-07] 京东物流数仓岗（北京京东振世主体）JD原文在猎聘可完整抓取且与输入材料一致，岗位对外标称3-5年经验；候选人数年经验远超门槛时，『职级/薪酬定级错配』应作为medium差距与独立面试问题处理，而非仅按年限达标降级
+- [2026-08-07] 电商数据背景投京东物流数仓岗时，Hive SQL性能调优与PowerDesigner是简历常见空白点，前者按medium、后者按low处理，并给『整理调优案例+工具快速上手』的可执行弥补建议
+- [2026-08-07] 实时链路强项的候选人投京东物流离线数仓岗（北京京东振世）时，除已知Hive调优/PowerDesigner空白外，应将『实时 vs 离线重心错位』列为medium差距，并建议面试先讲离线分层与ETL功底；京东物流技术博客（UData+StarRocks、数据蜂巢）证实其离线/OLAP栈为Spark+Hive+ClickHouse，与候选人栈重合度高，可作evidence引用
+- [2026-08-07] 公司资料提供的官网域名可能是同名第三方站点（如 jdlogistics.com 为美国货运公司），调研时需以公司主体为准核验官方域名（京东物流为 jdl.cn / jingdonglogistics.com），并在 research 中如实注明域名错误
+- [2026-08-07] 武汉大学等 985 高校本科满足猎聘版京东物流数仓 JD 的『985/211 高校全日制本科及以上学历优先』条件，应写入 matched 而非仅作学历达标处理
+- [2026-08-07] 猎聘版京东物流数仓 JD 比输入材料多一条『数据集成任务的开发与运维管理，保障数仓底座平稳运行』职责，与候选人 K8s 集群运维/任务稳定性经验高度对口，评估 responsibilities 时不可只按输入材料三职责计算
+- [2026-08-07] 猎聘 BI数据工程师页（job/1952727411）薪资 15-30k·16薪、标称 3-5 年，是判断候选人（9 年经验）职级/薪酬定级错配 risk 的量化依据，应写入 research 与 gaps
+- [2026-08-07] BOSS直聘 site:zhipin.com 检索普华永道职位被风控/登录墙拦截，校招类 JD 可改用牛客网校招职位页与应届生求职网（高校就业网转载）获取普华永道官方发布的岗位文本。
+- [2026-08-07] 普华永道不同业务线的数据相关职位职责差异明显：风险及控制数智化中心偏数据分析/网络安全/系统开发，数字化审计及鉴证服务偏信息系统审计与数据审计，可按关键词「数据」分别判定相关性。
+- [2026-08-07] [2026-08-07] 普华永道『数字化审计及鉴证服务顾问』JD 文本与应届生求职网（来源辽宁大学）转载的『毕业生计划』岗位完全一致（12K-13K/月、本科及以上、网申-笔试-面试）；资深候选人投此类岗位须先确认是否接受社招与职级定级，避免无效投递
+- [2026-08-07] [2026-08-07] 审计/鉴证咨询岗的『相关经验优先』默认指客户交付/审计项目经验而非技术栈；纯甲方数据平台候选人即使 IT 技能超出『对IT系统应用有一定了解』要求，核心差距仍是审计方法论、客户服务与英语，按 high 处理
+- [2026-08-07] [2026-08-07] 数据质量监控（规则校验+血缘+告警）是甲方数据工程师切入『数据审计』视角的最强复用点，可作为转型案例素材写入 strengths 与面试话术
+- [2026-08-07] [2026-08-07] 前端岗（数据中台方向）分析中，电商/业务型前端候选人的典型双空白是『数据中台领域产品经验』与『工程化主导证据』；技术栈全覆盖时两者按 medium 处理，建议用组件库建设包装工程化主导案例并补充可视化技术栈细节
+- [2026-08-07] 本次采集关键词『Android开发工程师（全国）』：猎聘移动端 m.liepin.com 职位详情页可直接抓取完整 JD 原文，是当前最稳定的公开来源；BOSS直聘 job_detail 详情页仍被风控拦截（仅返回『请稍候』加载页），需继续降级处理。
+- [2026-08-07] 猎聘上部分 Android 岗位已暂停招聘（如海康威视杭州 Android、上海多个 Android 岗），搜索摘要可见但详情页仅返回『该职位已暂停招聘』，必须逐条打开详情页核验后才可录入。
+- [2026-08-07] 公司官网招聘页（如昆仑芯 zhiye.com 职位详情页）可抓取完整 JD，但官网社招页通常不标注薪资与融资阶段，salary/stage 字段如实记为『面议/未披露』，不编造。
+- [2026-08-07] 近义扩展可提高命中率：『Android开发工程师』常以『Android framework工程师』『全栈开发（Android方向）』『移动端APP开发工程师』『安卓应用开发工程师』等变体出现，采集时按近义扩展筛选。
+- [2026-08-07] 公司官网核验：元征科技 cnlaunch.com、鼎桥技术 td-tech.com、昆仑芯 kunlunxin.com、中科创达 thundersoft.com 均经公开检索核验；不停科技未检索到明确的官方招聘域名，company_url 留空。
+- [2026-08-07] 数据平台工程师投机器人硬件公司的 Android 全栈岗时，属于方向性错配：核心差距不是技能深浅而是技能栈类别完全不同（Android/Kotlin 与 Go/Java vs Python/Spark），hard_skills 按 0-39 严重档处理、grade 用 D，并明确告知『是否投递』的判断而非给转型幻觉
+- [2026-08-07] 不停科技（BOTINKIT）公开调研已验证：botinkit.com 官网直连失败，可用百度百科、融资新闻（自动化网）与 RTHK 报道作降级来源；公司为 2021 年成立的深圳智能烹饪机器人公司，2026 年完成 B+/B++ 近 5000 万美元融资，方案部署全球 29 国，客户含 Disneyland、Jollibee、Walmart
+- [2026-08-07] BOSS直聘 job_detail 页面与 wapi 接口均被风控拦截（返回“请稍候”验证页/环境异常），无法直接抓取；改用猎聘岗位详情页（www.liepin.com/job/xxx.shtml 可正常访问且含薪资）与公司官方招聘 API/官网完成采集。
+- [2026-08-07] 腾讯/字节跳动/美团/网易等公司官方招聘页不对外公布薪资范围，故官方来源条目 salary 留空，未编造；猎聘条目均带原样薪资（如 25-40k·16薪、30-45k·16薪）。
+- [2026-08-07] 可复用的官方招聘接口：字节社招职位详情 GET https://jobs.bytedance.com/api/v1/job/posts/{id}?portal_type=2（校招 portal_type=3）；美团职位详情 POST https://zhaopin.meituan.com/api/official/job/getJobDetail（body 传 jobUnionId）；腾讯职位详情 GET https://careers.tencent.com/tencentcareer/api/post/ByPostId?postId={id}；网易职位列表 POST https://hr.163.com/api/hr163/position/queryPage、详情 GET https://hr.163.com/api/hr163/position/query?id={id}。
+- [2026-08-07] 收录前用在线状态字段校验岗位是否仍有效（字节 channel_online_status=1、腾讯 LastUpdateTime 近期、美团 refreshTime 近期），已剔除 channel_online_status=0 的下线岗位。
+- [2026-08-07] 再次验证方向性错配规律：JD 必备项（Java/C++、Android Framework 模块机制）与候选人技能栈（Python/Spark/Kafka/K8s）零交集时，hard_skills 按 0-39 严重档、grade 用 D；中科创达以 OS 定制为核心营收，Framework 深度要求更硬，应同时给出『内推数据相关岗位』的替代路径而非只劝退
+- [2026-08-07] m.liepin.com 移动端详情页本次经 open_page 抓取返回 FETCH_UNKNOWN_ERROR，改用搜索引擎摘要核验 JD 一致性即可，不必强求详情页
+- [2026-08-07] 数据平台工程师（Python/Spark/Kafka/K8s）投通信设备公司 Android 应用开发岗（车端/手机端）属方向性错配：hard_skills 与 responsibilities 按 0-39 严重档、grade 用 D；Java/Kotlin 等必须要求缺失按 high、加分项（Android Framework/鸿蒙/车载）缺失按 low；简历信息不足时 culture 取中性分并在 reason 注明不确定性，overall 由低分维度主导
+- [2026-08-07] 数据平台工程师投 AI 芯片公司 Android 岗为方向性错配：官方招聘页同岗位 JD 年限门槛（2年+）高于输入材料（1年+），跨方向投递须以官方详情页交叉核验硬性门槛
+- [2026-08-07] 昆仑芯官方招聘页（kunlunxin.zhiye.com）可完整抓取 JD，官网 company-profile 含企业文化原文，均作为稳定调研来源
+- [2026-08-07] 中科创达方向性错配场景再次验证：JD 必备项（Java/C++、Android Framework 模块机制）与候选人数据平台栈（Python/Spark/Kafka/K8s）零交集，hard_skills 按 0-39 严重档、grade 用 D，并给出『内推数据相关岗位』替代路径而非只劝退
+- [2026-08-07] 简历极简（仅一句话技能清单、无学历/职责/量化细节）时，评分以可验证信息为准：信息缺失项（学历、文化、稳定性细节）取中性分并在 reason 注明不确定性，不因信息少而臆造结论；方向性错配结论不受影响
+- [2026-08-07] BOTINKIT不停科技Google Play现有App『不停云厨』（com.botinkit.btyc_flutter）为Flutter技术栈，与JD的Kotlin/Jetpack Compose原生要求存在张力，应作为questions中的技术栈确认项而非臆断团队栈
+- [2026-08-07] 公司业务含『口味大数据』线（美食机器人＋口味大数据＋美食内容体系），可作为数据背景候选人的替代投递路径与面试切入话题
+- [2026-08-07] 简历仅含技能列表与一行经历（无学历/时间线/项目/量化）时，属于信息严重不足，risk中必须标注『简历筛选阶段即可能被过滤』，并确认岗位对无相关经验候选人的真实开放度
+- [2026-08-07] 数据平台工程师（3年电商）投沃尔沃车载安卓开发主管岗再次验证方向性错配：hard_skills/experience/responsibilities 按 0-39 严重档、grade 用 D；『求职意向：数据平台工程师』与安卓开发岗方向矛盾本身写入 risks，并建议转向车联网数据岗位而非硬转型；沃尔沃车载安卓岗公开渠道常以凯捷等乙方驻场形式发布，questions 中需确认编制性质
+- [2026-08-07] 昆仑芯调研再验证：官网公司介绍与官方招聘详情页（kunlunxin.zhiye.com）均可完整抓取；智能屏/智慧工作空间 Android 岗官方门槛（3 年左右 Android 经验+精通 Java/Kotlin）显著高于输入 JD（1 年以上），跨方向投递须先核验；公司处于 IPO 辅导期（2026-05 启动科创板辅导、百度持股 57.667%）可作为 culture/stability 维度证据
+- [2026-08-07] [2026-08-07] 鼎桥技术 Android 开发岗可调研源：猎聘详情页（liepin.com/job/1978375025.shtml）可完整抓取（15-35k、成都高新区、2 年以上、本科、招 1 人），JD 与输入材料一致；官网产品线为行业定制终端/物联网/行业无线/消费者终端；2024 年诺基亚退出、华为与成都高投完成收购，招聘平台『外商独资/民营』标注已过时，用工主体需向 HR 核实
+- [2026-08-07] 数据平台工程师（Python/Spark/Kafka/K8s、3年电商）投淘天『数据分析/数据科学专家-营销玩法』属同领域跨方向（工程→分析）：行业与年限达标，但 SQL/AB实验/因果推断/商业分析经验等核心必备项零证据，hard_skills 按 0-39 严重档、overall 定 C 而非 D（区别于 Android 岗零交集场景：同属数据域、Python 与看板建设有弱交集）；简历极简时 culture 取中性分，转岗动机写入 risks 并要求面试确认
+- [2026-08-07] 数据平台工程师（3年电商）投快手电商广告数据分析岗属数据域内岗位类型错配而非方向性错配：技能有交集（Python/电商/数据处理），核心差距是 SQL 熟练度与商业分析能力两个硬要求零证据、求职意向与 JD 岗位类型不一致；hard_skills/experience 按 50-60 部分匹配档、overall 按 B 处理，并给出『转分析岗包装 vs 内推数据平台岗』双路径建议
+- [2026-08-07] 快手电商广告数据分析 JD 与猎聘在招岗位原文一致（数据分析师（电商广告）-【电商】北京 25-40k·16薪、1-3年、本科、招1人）；团队定位可用全知网转载的『快手商业化-商业化分析中心』高级版 JD 交叉验证，已结束岗位仅作团队背景参考、不作硬门槛证据
+- [2026-08-07] 数据平台工程师（Python/Spark/Kafka/K8s、3年电商）投互动娱乐/海外增长公司数据分析岗属『数据域内方向错配』：非零交集（Python/数仓/ETL 对口）故不取 D，但 BI 工具与 SQL 等 JD 硬要求无简历证据，hard_skills/responsibilities 按 40-54 档、overall 落 C；无限进制官网 wuxianjinzhi.com 与猎聘详情页均可完整抓取（11-18k、2 年以上、本科、招 2 人），公司 2020 年成立、外资独资、500-999 人、融资未公开，可作为该公司后续调研的稳定来源
+- [2026-08-07] 数据平台工程师（Python/Spark/Kafka/K8s、3年电商）投腾讯企业微信数据分析师再次验证『同领域跨方向（工程→分析）』规律：官方 careers.tencent.com Query/ByPostId API 可逐字核验 JD（PostId 2051914911923224576）；SQL/统计/ML 必备项零证据时 hard_skills 按 0-39 严重档、overall 定 C 而非 D；Python 是唯一弱交集，『求职意向方向矛盾』与『简历筛选被过滤风险』写入 risks
+- [2026-08-07] 数据平台工程师（Python/Spark/Kafka/K8s、3年电商）投美团到餐『高级数据分析师/经营分析专家』属数据域内方向错配：Python/数据处理有弱交集故不取 D，但 SQL 与 AI 辅助分析两项 JD 硬要求零证据、岗位经验要求 5 年（聚合站 FAQ）、求职意向与岗位类型不符，hard_skills 按 40-54 档、overall 落 C（约 48）
+- [2026-08-07] 牛企直聘等聚合站转载的美团 JD 会补充输入材料缺失的职责条目（如第 4 条横向统筹）与经验年限（5 年），可作为官方 JD 的交叉核验来源并在 research 中注明转载平台
+- [2026-08-07] 美团官方招聘 zhaopin.meituan.com 详情页为 JS 渲染空壳，需用搜索引擎摘要、聚合站转载与官方 jobUnionId 链接交叉核验；猎聘同类岗（经营分析专家 30-60k·15薪、3-5年、本科）提供薪资/年限锚点
+- [2026-08-07] 数据平台工程师（3年电商）投字节『高级数据工程师（数据平台方向）』（JD 要求 5 年+）属方向对口型：hard_skills 70、experience 57、responsibilities 72，overall 65 定 B；年限是唯一 high 差距，Flink/实时数仓与公司级调优/治理为 medium，学历信息缺失按 medium 风险处理。
+- [2026-08-07] 字节调研源可用性：官网 bytedance.com/zh/about 与 jobs.bytedance.com 搜索摘要可抓，职位详情页偶发风控；抖音集团 Flink+Paimon 流式湖仓实践可从阿里云开发者社区获取，作为技术主线证据。
+- [2026-08-07] 大厂 C 端 Android 候选人投『AI 端侧方向』岗时，服务端/工具侧 AI 工程经验（代码检查平台、检索 Agent）不能等同端侧模型部署经验，该差距按 high 处理并给速成端侧 demo 的弥补路径；年限不足（2 年 vs 3-5 年）是简历筛选硬门槛，先确认弹性再投
+- [2026-08-07] 昆仑芯智能屏Android岗(J18238)官方JD可在kunlunxin.zhiye.com/zpdetail/150733291逐字核验，薪资面议；公司股改、IPO辅导期与估值信息可作为后续同类岗位调研的稳定来源
+- [2026-08-07] 大厂C端Android业务开发投芯片公司智能屏Android岗属同方向非错配：年限达标按深度待面试验证处理，C/C++/Linux/RTOS与Framework/AMS/WMS零经验按medium计，先确认岗位是应用层还是系统层
+- [2026-08-07] Android 应用层（Java+View 机制+性能优化+鸿蒙适配）投中科创达 Android Framework 岗属『同平台跨层』错配：非零交集故不取 D，但 JD 核心硬门槛（2 年以上 Framework 经验、AMS/WMS/PMS/Input/SurfaceFlinger、C++）零证据，hard_skills 按 50-55 部分匹配档、overall 定 B（约 57）；判断依据是技能栈类别是否同平台——零交集数据工程师投同岗为 D 档
+- [2026-08-07] 汽车整车厂车载安卓 JD 与互联网 C 端安卓 JD 的分水岭在『系统层』：SystemUI/Launcher/互联中心/投屏多屏 + framework 源码阅读是岗位主线而非加分项；C 端业务开发即使性能优化强，hard_skills/experience 也应落在 50/30 档、overall 定 C 而非 B
+- [2026-08-07] [2026-08-07] 大厂 C 端 Android 开发（2 年、Java+鸿蒙适配）投通信设备公司 Android 岗（车端/手机端）属『同岗位不同行业』而非方向性错配：hard_skills 按 75-85 良好档（Java/组件原理/性能优化直接对口），Kotlin、MVVM/MVI 无证据按 medium，鸿蒙适配命中加分项写入 strengths；行业跨度与地点变动（北京→成都）按 medium 差距处理，overall 由 hard_skills/experience 主导取 A，区别于数据平台工程师跨方向投 Android 的 D 档规律；用工主体（鼎桥技术 vs 鼎桥通信）与过时所有制标注需向 HR 核实
+- [2026-08-07] 元征科技（02488.HK）为港股主板上市汽车诊断硬件公司，官网 cnlaunch.com；2025 年报营收 21.1 亿（+12%）、海外占比 73%，ADS/AAS/EVS 三大 AI 战略、研发人员约 50%；其『Android 开发工程师（AI 端侧方向）J10517』在猎聘有可核验公开页（15-20k、3-5 年、本科、招 1 人），JD 原文与输入一致，可作为同类岗位调研的稳定来源
+- [2026-08-07] 大厂 C 端 Android（2 年全职+8 个月实习）投汽车诊断硬件『AI 端侧方向』岗再次验证：端侧模型部署/推理/资源调度零经验按 high 差距处理（工具侧 AI 经验不可等同）；Android 应用层基本功强（1000w+ PV、BML -220ms、鸿蒙适配）支撑 hard_skills 60+ 档、overall 落 B（约 63）；年限不足（2 vs 3-5 年）按简历筛选硬门槛、先确认弹性；JD 福利含『加班补贴』可作加班文化信号写入 culture
+- [2026-08-07] 「AI赋能工程师 / AI Enablement Lead」属『业务+AI 工具』复合岗：核心硬要求是市场/运营/产品业务背景（1-2 年）与主流 AI 工具熟练度（Codex/Claude + Prompt Engineering）；纯测试/纯工程背景即使 Python 与工程化思维有证据，AI 工具与业务逻辑零证据按 high 差距、hard_skills 落 40-54 档、overall 定 C（约 46）；Python/API/框架搭建是可迁移证据而非岗位主线
+- [2026-08-07] 公司仅提供内部飞书 wiki 链接且公开身份无法核实时，调研如实降级（注明来源与失败），company_health 与 preference 取中性 60，不因无法调研降低其他维度证据标准
+- [2026-08-07] 测试背景候选人投 AI赋能工程师类岗位：JD 核心硬要求（业务背景1-2年/AI工具熟练/Prompt工程/Python）几乎零证据时，hard_skills 按 40-54 档（非零交集：结构化思维、文档沉淀、Postman接口测试可迁移到 Skill 质检规则与文档/培训职责），overall 落 C（约47-49）；投递前先补营销场景Prompt×3+Python API脚本+mini RAG 最小证据包
+- [2026-08-07] 招聘主体仅提供 feishu 内链（如 guanghe.feishu.cn/wiki/xxx）时，该链接为登录墙不可公开访问，同名公司检索无法唯一对应主体，按公司信息不足降级处理：company_health/preference 取中性 60 并在 reason 注明，不强行推断行业与阶段
+- [2026-08-07] 飞书 wiki 域名前缀（如 guanghe.feishu.cn）可推断公司主体（光合新知/洋葱学园），但 wiki 内容通常不可公开访问，推断须标注『待 HR 核验』并写入 questions；应届/实习背景投『AI 赋能工程师』复合岗时，业务方法论工程化（分阶段测试+评分过滤规则+质检+效果监控）是强制证据项写入 strengths，Python/主流 AI 工具（Codex/Claude）零证据按 high 差距处理并给『面试前补 demo』路径
+- [2026-08-07] [2026-08-07] 飞书内部 wiki 域名拼音（如 guanghe→光合）可作公司身份推断线索，推断出的主体信息只写入 research 并注明未证实，不参与 company_health 评分，仍取中性 60
+- [2026-08-07] [2026-08-07] 纯测试背景投「AI赋能工程师」时，测试过的业务系统（CRM/营销工具自动分配、群发、话术库）与教育行业产品测试经历是可写进 matched/strengths 的可迁移证据，但不足以弥补业务背景与 AI 工具两条硬性要求，hard_skills 仍落 40-54 档
+- [2026-08-07] 招聘主体仅提供 feishu 内链（如 guanghe.feishu.cn/wiki/xxx）且公开检索无法唯一对应主体时，company_health/preference 取中性 60、research 注明降级来源，不强行推断行业与阶段（与既有规律一致，本次再次验证）
+- [2026-08-07] 测试背景候选人投 AI 赋能工程师岗时，即使存在『30内』年龄疑似限制与 3.5 年空窗，评分仍由 JD 核心硬要求（业务背景/AI 工具/Prompt/Python）主导：hard_skills 落 40-54 档、overall 定 C，年龄与空窗作为 high/medium 差距进 gaps 与 questions，不因额外负面信息把 overall 压到 D 档
+- [2026-08-07] 测试背景（约8年、带10+人测试团队）投洋葱学园『AI赋能工程师』：hard_skills 45、gate 48、overall 约48（C档），与既有『测试背景投AI赋能岗40-54档』规律一致；培训/文档/监控三职责有直接可迁移证据，Skill工程化与RAG零覆盖
+- [2026-08-07] 洋葱学园主体可公开核验（光合新知、北京朝阳、2013成立、AI智能学伴），同站另招『AI解决方案工程师（投放与裂变）』佐证该AI赋能岗服务市场增长团队；2026-07媒体披露电话营销投诉/退费难/增长压力，culture与company_health需叠加这些信号
+- [2026-08-07] JD标注笔试测试且面试重点为『现场写一个Prompt看结构化程度』时，对无Prompt证据的候选人应将笔试列为high风险，并给『3个营销场景Prompt作品集』的弥补路径
+- [2026-08-07] 10年纯测试主管（大专、深圳）投北京『AI赋能工程师』：纯测试背景hard_skills落40-54档的基础上，学历（大专vs本科）与年龄（约35 vs 30内）双重硬门槛失守时gate落20-30档，overall较无门槛问题的纯测试基线（47-49）再降约5分落C（约42）；跨城（深圳→北京）按medium而非high处理
+- [2026-08-07] 简历自称年限与经历时间线矛盾（自称10年 vs 2013年入职约13年）同样适用于测试背景候选人：写入risks由面试确认，不自行修正
+- [2026-08-07] 纯测试背景（8年、大专学历、无业务背景、无AI工具证据）投『AI赋能工程师』时，学历硬门槛（本科及以上）不达标使gate跌破40触发一票否决，即使hard_skills在40-54档，overall仍落C（约46），与既有『测试背景投AI赋能岗40-54档/overall C』规律一致；学历在gate维度的权重高于业务背景
+- [2026-08-07] 纯测试背景（4 段测试经历、无管理团队）投洋葱学园『AI赋能工程师』：hard_skills 45、gate 60（本科层次＋年龄 29 符合 30 内，学位缺失与时间线矛盾仅作核验项）、overall 约 47（C 档），与既有『测试背景投 AI 赋能岗 40-54 档』规律一致；年龄/学历均达标时 gate 给 60 而非 48，overall 仍由核心硬要求主导
+- [2026-08-07] 简历『年龄 29』与『2012-2016 大学教育』时间线推算矛盾、且自称年限与经历时间线不一致时，年龄相关的『30内』门槛存在不确定性，应写入 gate 核验项、risks 与 questions，不自行修正（既有规律再验证）
+- [2026-08-07] 公司主体身份经『飞书域名前缀推断＋公开检索交叉验证』可落到具体公司（guanghe→光合新知/洋葱学园）时，research 仍标注『待 HR 核验』，但 company_health 可叠加 2026-07 媒体信号（增长压力/429 条投诉 vs 已盈亏平衡）给 55，而非一律中性 60；preference 无数据仍取 60
+- [2026-08-07] 9 年纯测试、本科、无业务/AI 证据的候选人投 AI 赋能岗，稳定基线为 hard_skills 45 / experience 43 / responsibilities 45 / gate 48 / tech_direction 40，overall≈49（C），再次验证既有 46-49 规律
+- [2026-08-07] 简历年龄自称（26）与教育时间线（2013 入学推算约 31）矛盾，按既有规律写入 risks 由面试确认，不自行修正
+- [2026-08-07] 纯测试背景（4段、无学历信息、年龄30恰在『30内』边界、无业务背景、无AI工具证据）投洋葱学园『AI赋能工程师』：hard_skills 45、gate 50（学历无信息按核验项而非直接失守）、tech_direction 35、overall约48（C档），与既有『测试背景投AI赋能岗40-54档』规律一致；Python/API/数据处理是唯一硬性要求达标项写入matched
+- [2026-08-07] 简历完全缺失学历信息时，gate不直接判死（区别于大专已证实的<40一票否决），按『数据不足+核验项』处理给45-55分，但须标注简历筛选阶段被过滤的风险
+- [2026-08-07] 2026-07财中社报道（东方财富转载）再次确认洋葱学园已盈亏平衡但面临大厂入局增长压力、黑猫投诉429条，company_health取55的规律继续适用；同站另招『AI解决方案工程师（投放与裂变）』与『AlBuilder』岗位佐证AI赋能岗服务市场增长团队
+- [2026-08-07] [2026-08-07] 测试主管（带团队、培训分享、Python+Selenium+Pytest 自动化、测试过 AI+AR 数字人产品）投洋葱学园『AI赋能工程师』：Python 基础与培训/监控职责可写入 matched/strengths，但缺业务背景与 AI 工具/Prompt 两条硬要求，hard_skills 仍落 45 档、gate 60（本科+年龄推算达标）、overall≈51（C），较无 Python/AI 产品测试证据的同类候选人（47-49）略高 2-4 分，不改变档位
+- [2026-08-07] [2026-08-07] 简历『工作年限：4年』与经历时间线（2018.12 起约 7 年+）及自我评价『五年多』三方不一致，按既有规律写入 risks/questions 由面试确认，不自行修正（再次验证）
+- [2026-08-07] 7年纯测试（本科、教育行业背景命中加分项、有培训/监控/规范职责证据、年龄信息缺失）投『AI赋能工程师』：hard_skills 45 / experience 43 / responsibilities 45 / gate 55（本科达标+年龄无法核验）/ tech_direction 40，overall≈49（C），教育加分项与培训监控可迁移证据不足以把 hard_skills 抬出 40-54 档
+- [2026-08-07] 简历教育时间线缺失（『~』）导致年龄无法推算时，『30内』门槛按 gate 核验项处理（本科达标给 55），同时把『时间线推算可能超龄』写入 high 差距与 questions，建议投递前向 HR 确认弹性，不自行推断年龄
+- [2026-08-07] 洋葱学园『AI赋能工程师』JD 薪资定位仅写『参考资深业务执行/AI产品经理/技术+业务复合岗』无数字，校招公开应届起薪（15-25K/13-15薪）不可直接套用社招复合岗，compensation 按数据不足取 60（既有规律再验证）
+- [2026-08-07] 8年大厂测试开发（本科、31岁、2023年至今约3年空窗、百度/腾讯背景、含车载智能语音AI模型评测）投洋葱学园『AI赋能工程师』：语音AI评测（F1/准召率）、组内培训、工程化平台为三条可迁移证据，但hard_skills仍落40-54档；年龄31 vs『30内』与3年空窗叠加时gate给48、overall约48（C档），与既有『纯测试投AI赋能岗46-49 C档』规律一致
+- [2026-08-07] 简历自称年龄（31）与教育时间线（2011年入学推算约16-17岁）矛盾时，年龄『30内』门槛的不确定性写入gate核验项、risks与questions，不自行修正
+- [2026-08-07] 大专已证实（2017-2020大专，JD要求本科及以上）的纯测试背景候选人投洋葱学园AI赋能工程师：gate=35（低于40触发一票否决）、hard_skills=45、overall≈47（C档），再次验证『大专已证实→gate<40』与『测试背景投AI赋能岗46-49 C档』两条既有规律；24岁符合『30内』，年龄不构成额外失分
+- [2026-08-07] 2年纯测试背景（本科26岁、Python+Pytest+Requests API自动化证据强、就职测试培训机构霍格沃兹学社）投洋葱学园『AI赋能工程师』：hard_skills 48（Python/API硬要求达标＋教育行业弱加分，仍落40-54档）、experience 43、responsibilities 45、gate 60（本科+年龄26达标）、tech_direction 40、overall≈51（C），与既有纯测试基线46-51一致
+- [2026-08-07] 雇主为测试培训机构（霍格沃兹学社）时，JD加分项『教育行业背景』可作弱命中写入matched，但需在questions中确认其与K12教育背景的认可差异
+- [2026-08-07] 『工作年限：2年』与2021.06至今任职时间线（约5年）矛盾，按既有规律写入risks/questions由面试确认，不自行修正（规律再验证）
+- [2026-08-07] 纯测试背景（本科27岁、3年单一雇主、Python+Selenium协助+Postman+DBeaver）投洋葱学园『AI赋能工程师』：hard_skills 45、experience 43、responsibilities 45、gate 55（本科+年龄达标但业务背景硬要求缺失）、tech_direction 38、overall≈49（C），再次验证『测试背景投AI赋能岗46-51 C档』规律
+- [2026-08-07] 简历工作经历止于2023.06、距当前约3年空窗时，稳定性按55分处理并将空窗作为high级核验项写入risks/questions，不自行推断空窗原因
+- [2026-08-07] 公司资料仅给飞书wiki链接（guanghe.feishu.cn，需权限）时按『未能访问』降级注明，但可由wiki域名前缀识别公司主体为光合新知（洋葱学园），company_health沿用财中社/东方财富2026-07报道取55
+- [2026-08-07] 25 岁、本科、3 段纯测试经历（金融/电商/OA/运营系统）、Python 接口自动化有代码级证据、无业务背景与 AI 工具证据投洋葱学园『AI赋能工程师』：hard_skills 45 / experience 43 / responsibilities 45 / gate 60（年龄 25、本科双达标）/ tech_direction 40，overall≈50（C 档），与既有『纯测试投 AI 赋能岗 40-54 档、overall C』规律一致
+- [2026-08-07] 年龄已明确（25）且满足 30 内时，教育背景仅标注『本科』层次、时间线缺失不再影响 gate 核验（与『时间线缺失无法推算年龄』场景区分），只作简历核验项处理
+- [2026-08-07] 26 岁自称、本科（2015-2019）、纯测试背景（自称 4 年 vs 2019 年起约 7 年时间线矛盾）投洋葱学园 AI 赋能岗：hard_skills 45 / experience 43 / responsibilities 45 / gate 60（本科+年龄 30 内达标，自称 26 与推算 29 矛盾仅作核验项）/ tech_direction 38 / culture 62 / stability 65 / company_health 55，overall≈50（C），再次验证『测试背景投 AI 赋能岗 46-51 C 档』规律；Python 自动化证据强（多项目平台）也不改变 hard_skills 档位
+- [2026-08-07] 2026-07 财中社与 21 世纪经济报道双重信源再次确认洋葱学园『盈亏平衡+持续盈利』但『大厂入局增长压力+黑猫投诉 429 条』，company_health 取 55 的规律继续适用；财中社文章可完整抓取作稳定调研来源
+- [2026-08-07] 27岁纯测试背景（本科、Python+requests+pytest+selenium自动化证据强、自称3年 vs 2020.06起约6年时间线矛盾、现居深圳投北京岗、雇主为区块链/NFT/积分SaaS公司）投洋葱学园『AI赋能工程师』：hard_skills 46 / experience 43 / responsibilities 45 / gate 55（本科+年龄27达标、业务背景硬要求缺失）/ tech_direction 38 / culture 65 / stability 58 / overall≈50（C档），再次验证『纯测试投AI赋能岗46-51 C档』规律
+- [2026-08-07] 候选人现居地（电话/雇主）与JD工作城市不一致时，跨城迁移写入preference维度reason与questions（搬迁意愿、到岗时间、远程弹性），不降低score档位
+- [2026-08-07] 测试背景候选人简历中『工作年限』与经历起始时间矛盾时，除risks/questions核验外，还在gate维度的evidence中并列呈现，供面试统一口径
+- [2026-08-07] [2026-08-07] 25岁、大专（2017-2020高职）已证实、3年纯测试（2020.10-2023.06 小鹅通、无业务背景/AI工具/Prompt证据、约3年空窗）投洋葱学园『AI赋能工程师』：gate=35（大专触发一票否决）、hard_skills 45、experience 43、responsibilities 45、tech_direction 40（SCRM营销工具测试弱交集）、stability 55（3年空窗）、overall≈46（C档），与『大专已证实→gate<40、纯测试投AI赋能岗 overall 46-49 C档』规律一致
+- [2026-08-07] [2026-08-07] 测试过营销/私域运营工具（SCRM 渠道活码/群发/裂变）的纯测试候选人，业务理解只能作为 weak matched 与面试包装素材，不改变 hard_skills 40-54 档与 overall C 档结论（规律再验证）
+- [2026-08-07] 三年制学制＋『软件技术』专业＋学校短名（如湖南工程）是高职大专的强信号组合，可用阳光高考院校库与校官网专业页公开佐证学历层次，供gate学历核验复用
+- [2026-08-07] 已证实大专（湖南工程职业技术学院·软件技术，2018-2021三年制）+3年纯测试（Sagemcom外企、Python自动化证据强、2023.07止约3年空窗、现居地非北京）投洋葱学园『AI赋能工程师』：hard_skills 45 / experience 43 / responsibilities 45 / gate 35（学历触发一票否决）/ tech_direction 38 / compensation 60（数据不足）/ culture 62 / stability 55（空窗）/ company_health 55 / preference 60（跨城待确认），overall≈46（C档），再次验证『大专→gate<40』与『测试背景投AI赋能岗46-51 C档』两条规律
+- [2026-08-07] 28岁（推算）、本科（民办广东白云学院）、自称3年与2020.07-2023.09单一雇主时间线吻合、纯测试背景（银行/贷款/电商平台）投洋葱学园『AI赋能工程师』：hard_skills 46 / experience 43 / responsibilities 45 / gate 55（本科+年龄达标、业务背景硬要求缺失）/ tech_direction 40 / culture 62 / stability 55（约3年空窗）/ company_health 55 / overall≈49（C档），再次验证『纯测试投AI赋能岗46-51 C档』规律；2026-07财中社+21世纪经济报道+东方财富三信源及2026-02科协授牌再验证company_health取55
+- [2026-08-07] 28岁、本科（湖南工程学院·电气工程及其自动化，2015-2019，校官网证实4年制本科）、自称4年年限与2019.06-2023.07实际任职一致、纯测试背景（医疗/金融/社区/手机ROM）、约3年空窗、现居深圳/湖南投北京岗、无业务背景与AI工具证据，投洋葱学园『AI赋能工程师』：hard_skills 46 / experience 43 / responsibilities 45 / gate 55（本科+年龄28达标、业务背景硬要求缺失）/ tech_direction 38 / compensation 60（数据不足）/ culture 62 / stability 55（3年空窗）/ company_health 55 / preference 60（跨城待确认），overall≈49（C档），再次验证『纯测试投AI赋能岗46-51 C档』规律
+- [2026-08-07] 纯测试背景（华为/商汤外包驻场、Python＋Airtest 自动化、图像超分 SDK 测试）投洋葱学园 AI 赋能岗：大专已证实→gate=35 触发一票否决，overall≈46（C 档），与『测试背景投 AI 赋能岗 46-51 C 档』规律一致
+- [2026-08-07] 商汤 AI 图像算法场景的测试经历只是面试包装素材，不改变 tech_direction 方向错配结论
+- [2026-08-07] 应届/实习背景（数据分析硕士+Python/CNN项目+两段金融实习、全职业务经验0年、硕士毕业约2.7年空窗、现居惠州投北京岗）投洋葱学园『AI赋能工程师』：hard_skills 48 / experience 40 / responsibilities 42 / gate 55（本科+硕士、年龄约26达标，业务背景硬要求缺失）/ tech_direction 40 / compensation 60（数据不足）/ culture 62 / stability 55（毕业空窗核验项）/ company_health 55 / preference 60（跨城待确认），overall≈49（C档），验证『应届/实习背景投AI赋能岗 hard_skills 40-54、overall C』规律；Python/数据处理是唯一硬要求达标项，AI工具与Prompt零证据按high差距并给『营销场景Prompt×3+mini RAG+Python API脚本』最小证据包
+- [2026-08-07] 31岁硕士（通信/电子工程）纯测试背景（中软约3.2年+比亚迪约4.5年在任、Python脚本与自动化证据有、无业务背景/AI工具/Prompt证据）投洋葱学园AI赋能岗：hard_skills 46 / experience 43 / responsibilities 43 / gate 52（硕士加分但年龄31超『30内』1年）/ tech_direction 38 / compensation 60 / culture 62 / stability 68 / company_health 55 / preference 60，overall≈49（C档），再次验证『纯测试投AI赋能岗46-51 C档』规律；硕士学历不改变档位
+- [2026-08-07] JD基本信息字段错位（『性别要求：30内』实为年龄要求）时，按年龄要求处理并写入questions核实，不臆断为性别门槛
+- [2026-08-07] 稳定任职（单一雇主约4.5年在任、无空窗）的测试候选人投AI赋能岗，stability可取65-70档，与跳槽频繁/有空窗案例区分开
+- [2026-08-07] 产品背景+AI项目型候选人（主导AI报告/AI付费/AI透传等AI功能落地，但无Python与AI工具实操证据）投洋葱学园『AI赋能工程师』：hard_skills 56 / experience 52 / responsibilities 52 / gate 62 / tech_direction 55 / culture 66 / stability 55 / company_health 55，overall≈57（B档），明显高于纯测试背景候选人（46-51 C档）；与JD『产品背景+AI项目』优先画像一致是核心加分项，Python与AI工具实操两大硬要求无证据按high差距处理
+- [2026-08-07] 当JD硬性要求同时含『业务背景』与『Python基础』时，产品背景候选人的典型双空白是『AI工具/Prompt实操证据』与『Python/API代码证据』；若其在AI产品功能落地有主导证据，整体可上探至B档，但必须在gaps/questions中给出补代码+现场Prompt演练的弥补路径，防止被判定为JD明示不建议的『纯业务人员』
+- [2026-08-07] 应届计算机本科（211）+信息技术教资、Python/ML项目证据强、零业务背景零AI工具证据投洋葱学园『AI赋能工程师』：hard_skills 50 / experience 40 / responsibilities 42 / gate 55（本科+年龄达标、业务背景硬要求缺失）/ tech_direction 40 / compensation 60 / culture 62 / stability 55（毕业约2年空窗）/ company_health 55 / preference 60（现居地编码待确认），overall≈49（C档），与『应届/实习背景投AI赋能岗46-51 C档』规律一致
+- [2026-08-07] 『高中信息技术教师资格证』可作为教育行业加分项与『培训与普及（20%）』职责的对口证据写入strengths，但不足以弥补业务背景硬缺口；有教资的应届生该维度可给50左右而非45
+- [2026-08-07] 无 Python 证据、无业务背景、经历止于 2022.03（约 4.4 年空窗）的本科纯测试候选人投洋葱学园『AI赋能工程师』：hard_skills 44 / experience 40 / responsibilities 43 / gate 55 / tech_direction 38 / stability 55，overall≈48（C 档），略低于有 Python 自动化证据的纯测试基线（45-51），再次验证『纯测试投 AI 赋能岗 46-51 C 档』；硬要求缺三项（业务背景、AI 工具/Prompt、Python）时 hard_skills 落 43-45 档
+- [2026-08-07] 纯前端背景（约3.4年、中软国际外包、vue2/vue3/react/uni-app、无业务背景无AI工具无Python证据、约3.3年空窗、本科）投洋葱学园『AI赋能工程师』：hard_skills 45 / experience 44 / responsibilities 43 / gate 55（本科达标+年龄推算约29但无出生日期需核验）/ tech_direction 40 / compensation 60 / culture 62 / stability 55（3.3年空窗）/ company_health 55 / preference 60，overall≈49（C档），与『非业务非AI背景投AI赋能岗46-51 C档』规律一致；前端nodejs编程基础与教育行业项目（智慧托育）是可迁移素材，但不足以弥补业务背景/AI工具Prompt/Python三条硬要求缺口
+- [2026-08-07] 纯前端背景（约 8 年 5 段、大专、31 岁、2023.12 起约 2.7 年空窗、无业务背景/AI 工具/Prompt/Python 证据）投洋葱学园『AI赋能工程师』：hard_skills 45 / experience 44 / responsibilities 44 / gate 35（大专低于本科硬门槛触发一票否决＋年龄超『30内』1 年）/ tech_direction 40 / compensation 60 / culture 62 / stability 53 / company_health 55 / preference 60，overall≈46（C 档），与『大专已证实→gate<40 一票否决→overall≈46』规律一致；前端工程化（监控/组件库/重构）只够支撑 hard_skills 40-54 档，233网校教育行业经历是加分项弱证据而非硬要求弥补
+- [2026-08-07] 11年纯前端（教育软件2.5年+兴盛优选电商3年、211本科、32岁、无业务背景无AI工具无Python证据）投洋葱学园『AI赋能工程师』：hard_skills 47 / experience 47 / responsibilities 43 / gate 50（本科达标但年龄32超『30内』2年、业务背景缺失）/ tech_direction 40 / compensation 60 / culture 62 / stability 58（11年5段平均2.2年、仅2015年半年空窗）/ company_health 60（主体经公开检索核实为光合新知·洋葱学园但经营数据不足）/ preference 60（推断长沙跨城待确认），overall≈50（C档），与『非业务非AI背景投AI赋能岗46-51 C档』规律一致；长年限前端+教育/电商行业覆盖面使hard_skills/experience较3.4年纯前端案例（45/44）微升，但不改变三条硬要求零证据的档位结论
+- [2026-08-07] guanghe.feishu.cn前缀推断『光合新知』后，可进一步用公开检索（百度百科/企查查/高校就业网校招页）核实主体为洋葱学园并获得经营活跃信号，company_health可从纯中性55-60档微升至60并写入已核实发现，但缺融资/营收数据仍注明数据不足
+- [2026-08-07] 纯前端背景（约6年4段、本科独立学院、电子商务专业、无业务背景/AI工具/Python证据、约2.75年空窗、自报29但教育时间线矛盾）投洋葱学园AI赋能岗：hard_skills 45 / experience 44 / responsibilities 43 / gate 60（本科+自报年龄达标，时间线矛盾仅作核验项）/ tech_direction 40 / compensation 60 / culture 62 / stability 55 / company_health 55 / preference 60，overall≈50（C档），与既有'纯前端投AI赋能岗46-51 C档'规律一致；电子商务专业是业务背景的弱信号而非硬要求弥补，node.js/axios只能支撑'API调用'弱证据
+- [2026-08-07] 纯前端背景（6年+、长沙本地企业、无业务背景/无AI工具/Prompt/Python证据、年龄33超『30内』3年）投洋葱学园『AI赋能工程师』：hard_skills 47 / experience 44 / responsibilities 44 / gate 50 / tech_direction 41 / compensation 60 / culture 63 / stability 62 / company_health 62 / preference 60，overall≈50（C档），再次验证『非业务非AI背景投AI赋能岗46-51 C档』规律；OpenAI API集成项目（ChatGPT客户端）+培训/监控经历可让 hard_skills/responsibilities 略高于零证据前端基线（45/43→47/44）
+- [2026-08-07] 洋葱学园（光合新知）公开调研锚点：累计融资约$84.2M（D+轮2022）、规模1000-4999人、2025-2026多智能体AI转型、2026已盈亏平衡；负面信号为2026.07『电话轰炸/退款难』投诉与销售岗加班/末位淘汰传闻，company_health 可取60-63而非中性55，但 culture 与工作强度需在 questions 中核实
+- [2026-08-07] 前端候选人简历普遍缺『技能』小节，Python/AI工具/Prompt证据需逐项从项目技术栈提取；『结构化思维/工程化』可用组件库、规范推行、异常监控体系作为证据，映射JD『Skill输入输出Schema/质检规则/异常处理机制』
+- [2026-08-07] [2026-08-07] 应届纯前端（0.4 年全职+4 个月实习、211 CS 本科、年龄约 23 达标）投洋葱学园『AI赋能工程师』：hard_skills 45 / experience 40 / responsibilities 43 / gate 48（本科+年龄达标但『1-2 年业务背景』硬要求与全职年限未达）/ tech_direction 40 / compensation 60 / culture 62 / stability 55（全职 5 个月+约 9 个月未列出时间）/ company_health 60 / preference 60，overall≈48（C 档），与『非业务非AI背景投 AI 赋能岗 46-51 C 档』规律一致；应届 vs Lead 级职级错配与三条硬要求零证据是核心差距，弥补路径为『营销 Prompt×3+Python API 脚本+mini RAG』最小证据包
+- [2026-08-07] 有 AI/prompt 弱证据与重构深度的 4.5 年纯前端（单一雇主深信服、60 万行 VDC 重构、PMP、TL 培训分享）投洋葱学园『AI赋能工程师』：hard_skills 47 / experience 46 / responsibilities 44 / gate 55 / tech_direction 42 / compensation 60 / culture 60 / stability 60 / company_health 62 / preference 55，overall≈50（C 档），与『非业务非AI背景投AI赋能岗 46-51 C 档』规律一致；prompt 萌芽与重构深度使 hard_skills 较 3.4 年纯前端基线（45）微升 2 分，前端 TL 培训分享经验可撑 culture 与『培训与普及（20%）』职责弱证据，但不改变三条硬要求缺口的档位结论
+- [2026-08-07] 应届产品背景+AI项目证据（提示词库+多模态生成链路0-1落地）投洋葱学园AI赋能岗时，硬性要求三项中业务背景与Prompt/AI工具有部分证据，hard_skills 按 55-69 部分匹配档（约62）、overall 落 B（约57），显著高于纯测试/纯前端候选人的 46-51 C 档；Python 零证据仍按 high 差距并给『3个营销Prompt+Python API脚本+mini RAG』最小证据包
+- [2026-08-07] 应届候选人的实习量化业务结果（渗透率/使用时长/溢出金额等）可作为业务背景与效果监控职责的部分证据，但不能把 experience 抬出 40-54 档——全职年限硬要求未达是主要缺口
+- [2026-08-07] 2026-07财中社/东方财富『盈亏平衡+持续盈利+大厂入局增长压力』与2026-05~07黑猫/新浪退费及电话营销投诉持续，company_health 取 55 的规律继续适用；2026-02科协授牌与2026-05世界数字教育大会AI智能学伴展示佐证AI转型活跃，可作为同类岗位调研的稳定信源
+- [2026-08-07] 应届但有真实『业务×AI』复合证据（3 段产品运营实习+Prompt 调优/LLM 评测/AI 产品项目+Python 列明）投洋葱学园『AI赋能工程师』：hard_skills 62 / experience 56 / responsibilities 60 / gate 55（本科+年龄 21 达标但『1-2 年业务背景』仅实习级、Lead 职级错配）/ tech_direction 66 / compensation 60 / culture 64 / stability 58 / company_health 60 / preference 60，overall≈60（B 档），显著高于既有『非业务非AI背景 46-51 C 档』基线；规律：『业务×AI』复合证据充分时，零全职也可让 hard_skills/tech_direction 上 60+ 档，决定档位的是硬要求年限与职级错配而非技能缺口；弥补路径＝最小证据包（营销 Prompt×3+Python API 脚本+mini RAG）+实习折算确认+降级定级预期
+- [2026-08-07] 大厂（百度/抖音）约1.25年产品实习的应届候选人（21岁）投洋葱学园『AI赋能工程师』：hard_skills 52 / experience 49 / responsibilities 49 / gate 58 / tech_direction 46 / compensation 58 / culture 62 / stability 53 / company_health 60 / preference 60，overall≈53（C档上沿）；1年大厂AI产品实习+强量化结果可将应届基线（46-51）上探至53，但AI工具/Python零证据与全职业务年限不足仍是两个high差距，结构化思维证据（打分体系/规则配置/AB实验）可支撑hard_skills 50-54档
+- [2026-08-07] 飞书wiki链接（guanghe.feishu.cn）需登录无法匿名访问，改为公开检索核实主体为光合新知·洋葱学园；经营数据充分时company_health可从55上调至60（盈亏平衡+持续盈利），但需同步记录招生承压/退费投诉风险
+- [2026-08-07] JD无薪资区间时，公司公开校招起薪（15-25K/13-15薪）可作为compensation的补充证据，但岗位『资深』薪酬定位与应届背景的职级错配仍按风险提示处理
+- [2026-08-07] 应届业务×AI复合（腾讯AI陪伴产品实习+Prompt/Agent工程化+内容运营）投洋葱学园AI赋能岗：hard_skills 60 / experience 55 / responsibilities 62 / gate 55 / tech_direction 66 / compensation 60 / culture 63 / stability 56 / company_health 60 / preference 60，overall≈60（B档），与『业务×AI复合证据充分可上60+档』规律一致；较既有B档基线（62/56/60/55/66/60/64/58/60/60），该公司候选人Prompt/Agent证据更贴合『情感树洞』方向，但Python零证据使hard_skills回落至60，Python仍是应届复合候选人的主要扣分项
+- [2026-08-07] 洋葱学园2026校招公开信息（起薪15-25K、全年13-15薪、六险一金、弹性不打卡）可作为该公司应届定级薪酬锚点写入compensation research；AI智能学伴含『情感树洞』多智能体（2026-05世界数字教育大会，光明网），AI陪伴/情感智能方向候选人可直接关联作为tech_direction强匹配信号
+- [2026-08-07] 硕士应届（计算机本科+985心理学硕士，约25岁）2段产品运营实习（好未来AI助学6个月+舟济AI虚拟角色3个月）投洋葱学园『AI赋能工程师』：hard_skills 60 / experience 53 / responsibilities 56 / gate 56（学历与年龄达标，但业务年限仅实习级、Lead职级错配）/ tech_direction 62 / compensation 58 / culture 63 / stability 60 / company_health 61 / preference 60，overall≈58（B档）；教育行业龙头AI产品实习是『教育行业背景』加分项强证据并可支撑tech_direction 60+档，但Codex/Claude/Prompt零证据与『1-2年业务背景』全职口径不足仍是两个high差距，弥补路径=最小证据包（营销Prompt×3+Python API脚本+mini RAG）+实习折算话术+降级定级预期
+- [2026-08-07] 应届全栈/前端背景（Python FastAPI 真实后端+工程化体系，但无业务背景、无 AI 工具/Prompt 证据）投洋葱学园『AI赋能工程师』：hard_skills 48 / experience 41 / responsibilities 44 / gate 48 / tech_direction 41 / compensation 60 / culture 61 / stability 56 / company_health 60 / preference 60，overall≈49（C 档），与『非业务非AI背景投AI赋能岗46-51 C档』规律一致；FastAPI/后端证据比 node.js/axios 弱证据略强（45→48），但不改变档位结论，应届+全栈亦不改变该规律
+- [2026-08-07] 应届产品运营背景（3段实习约9个月、量化结果强、但AI工具/Prompt/Python三项零证据、211本科汉语言专业）投洋葱学园『AI赋能工程师』：hard_skills 50 / experience 52 / responsibilities 48 / gate 52 / tech_direction 44 / compensation 58 / culture 63 / stability 57 / company_health 60 / preference 58，overall≈52（C档上沿），介于『非业务非AI背景46-51 C档』与『业务×AI复合B档约60』之间；规律：业务运营实习强但AI零证据时，档位由AI工具/Prompt/Python两个high缺口与全职年限未达决定，弥补路径＝最小证据包（营销Prompt×3+Python API脚本+mini RAG）+实习折算确认
+- [2026-08-07] 产品运营实习的『数据看板/A-B测试/ROI复盘/标准化SOP』可支撑hard_skills的『结构化思维』与responsibilities的『效果监控（10%）』弱证据，但不足以覆盖Skill工程化/RAG职责；汉语言等非技术专业应届投该岗时，『1-2年业务背景』硬要求按实习折算口径写入questions核实
+- [2026-08-07] 应届前端（MetaGPT AI 编程平台 4 个月增长实习：LLM API/SSE/多轮对话工程 + 埋点/联盟营销/付费体系量化结果）投洋葱学园『AI赋能工程师』：hard_skills 50 / experience 43 / responsibilities 45 / gate 54 / tech_direction 46 / compensation 60 / culture 60 / stability 56 / company_health 60 / preference 60，overall≈51（C 档上沿）；AI 产品前端工程与增长量化实习可将应届非业务背景基线（46-50）抬高至 51 左右，但业务背景/AI工具+Prompt/Python 三条硬要求零证据时仍锁 C 档——缺的不是工程能力而是『业务方法论+AI 工具使用』证据；弥补路径=营销 Prompt×3+Python API 脚本+mini RAG 最小证据包+业务故事化话术+降级定级预期
+- [2026-08-07] 纯前端（React/TS/axios、无Python）2个月业务侧前端实习投洋葱学园AI赋能岗：hard_skills 48 / experience 41 / responsibilities 45 / gate 52 / tech_direction 41 / compensation 58 / culture 61 / stability 55 / company_health 60 / preference 60，overall≈49（C档），与『非业务非AI背景46-51 C档』基线一致；AI生成Mock数据属弱证据，Mock适配器Schema/类型转换设计可作Skill输入输出Schema设计的迁移证据，硕士学历使gate高于本科应届（52 vs 48），业务全职年限与AI工具/Python仍为high差距
+- [2026-08-07] 简历仅姓名+飞书ATS链接（无附件、需登录）时，十个维度一律按『数据不足』中性60分处理、overall=60（B档），报告核心产出是待核实清单（学历/年限/AI工具/Python/期望薪资）而非打分结论；不得因缺证据臆断候选人背景，也不得编造分数依据
+- [2026-08-07] JD模板字段错位（如『性别要求：30内』疑似应为『年龄要求』）应作为数据质量问题写入questions向HR核实，不直接按错位字段解读门槛
+- [2026-08-07] 公司资料缺失但JD/飞书租户域（guanghe=光合新知=洋葱学园）与公开信息可对应时，可用公开渠道确认主体与经营信号，company_health 不必给数据不足分
+- [2026-08-07] [2026-08-07] guanghe.feishu.cn 域名对应光合新知（北京）科技（洋葱学园），本次『AI赋能工程师』JD与既有沉淀的洋葱学园同岗位为同一JD，公司调研锚点可复用（校招起薪15-25K/13-15薪、AI智能学伴多智能体、company_health 55）
+- [2026-08-07] [2026-08-07] 应届全栈+AI集成+创业背景（SD/ChatGLM集成、需求解析85%、平台上线，但Python/Codex/Claude/Prompt零证据、业务年限仅创业/实习口径）投洋葱学园『AI赋能工程师』：hard_skills 55 / experience 45 / responsibilities 51 / gate 50 / tech_direction 53 / compensation 58 / culture 63 / stability 56 / company_health 55 / preference 60，overall≈53（C档上沿）；『AI应用集成工程+效果量化』可将应届非业务非AI基线（46-51）抬高至53，但Python/AI工具+Prompt证据与全职业务年限两个high缺口仍锁C档，无法突破至『业务×AI复合60+ B档』；创业时间线矛盾（2023.04-2024.01 vs 2024.06上线）写入questions核实

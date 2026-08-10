@@ -1,0 +1,16 @@
+{
+  "name": "aptmatch-recruiter",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "AptMatch 招聘端独立项目",
+  "workspaces": ["server", "web"],
+  "scripts": {
+    "dev": "concurrently -n recruit-api,recruit-web -c magenta,cyan \"npm run dev -w server\" \"npm run dev -w web\"",
+    "build": "npm run build -w web",
+    "test:e2e": "npm run build && node scripts/recruiter-e2e.mjs",
+    "start": "npm run start -w server",
+    "test": "npm run test -w server && npm run test -w web"
+  },
+  "devDependencies": { "concurrently": "^9.1.0" }
+}
