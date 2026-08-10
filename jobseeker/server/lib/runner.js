@@ -3,10 +3,12 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { taskLogPath, taskWorkspace } from './paths.js';
 import { buildCommand } from './providers.js';
-import { validateReport, validateCrawlResults } from './validate.js';
+import { validateReport, validateCrawlResults, validateInterviewTurn } from './validate.js';
 import { appendLearnings, agentDir, readAgentProfile, skillsDir } from './agentfs.js';
 import { rowById } from '../db.js';
+import { emitTaskChanged } from './serialize.js';
 import { CRAWL_AGENTS_MD, parseCrawlParams, buildCrawlPrompt } from './crawl.js';
+import { INTERVIEW_AGENTS_MD, parseInterviewParams, buildInterviewPrompt } from './interview.js';
 
 const USE_MOCK = process.env.RUNNER === 'mock';
 const OUTPUT_FILE = (task) =>
@@ -19,9 +21,10 @@ const OUTPUT_FILE = (task) =>
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
 export class TaskRunner {
-  constructor({ db, getSettings }) {
+  constructor({ db, getSettings, hub = null }) {
     this.db = db;
     this.getSettings = getSettings;
+    this.hub = hub;
     this.running = new Map(); // taskId -> { child, cancelled }
   }
 
@@ -70,10 +73,23 @@ export class TaskRunner {
       }
     }
 
+    if (task.mode === 'interview') {
+      fs.writeFileSync(
+        path.join(ws, 'input', 'interview_history.md'),
+        buildInterviewHistory(this.db, task),
+        'utf8'
+      );
+    }
+
     if (task.agent_id) {
       const agent = rowById(this.db, 'agents', task.agent_id);
       if (agent) {
-        const profile = task.mode === 'crawl' ? CRAWL_AGENTS_MD : readAgentProfile(agent.slug);
+        const profile =
+          task.mode === 'crawl'
+            ? CRAWL_AGENTS_MD
+            : task.mode === 'interview'
+              ? INTERVIEW_AGENTS_MD
+              : readAgentProfile(agent.slug);
         fs.writeFileSync(path.join(ws, 'AGENTS.md'), profile || '# 角色：契合度分析师\n', 'utf8');
         const src = skillsDir(agent.slug);
         const dst = path.join(ws, 'skills');
@@ -126,6 +142,10 @@ export class TaskRunner {
     const logPath = taskLogPath(task.id);
     const logStream = fs.createWriteStream(logPath, { flags: 'a' });
     logStream.write(`[${new Date().toISOString()}] $ ${cmd} ${args.join(' ')}\n`);
+    const streamLog = (chunk) => {
+      const data = chunk.toString('utf8');
+      if (this.hub) this.hub.emit('log', { taskId: task.id, data });
+    };
 
     let child;
     try {
@@ -140,8 +160,14 @@ export class TaskRunner {
       return;
     }
 
-    child.stdout.on('data', (d) => logStream.write(d));
-    child.stderr.on('data', (d) => logStream.write(d));
+    child.stdout.on('data', (d) => {
+      logStream.write(d);
+      streamLog(d);
+    });
+    child.stderr.on('data', (d) => {
+      logStream.write(d);
+      streamLog(d);
+    });
 
     this.running.set(task.id, { child, cancelled: false });
     this.db.prepare('UPDATE tasks SET pid = ? WHERE id = ?').run(child.pid, task.id);
@@ -201,7 +227,12 @@ export class TaskRunner {
         );
         return;
       }
-      const v = task.mode === 'crawl' ? validateCrawlResults(outcome.report) : validateReport(outcome.report);
+      const v =
+        task.mode === 'crawl'
+          ? validateCrawlResults(outcome.report)
+          : task.mode === 'interview'
+            ? validateInterviewTurn(outcome.report)
+            : validateReport(outcome.report);
       if (!v.ok) {
         this.finish(task.id, 'failed', null, `报告 schema 校验失败：${v.errors.slice(0, 8).join('；')}`);
         return;
@@ -239,6 +270,26 @@ export class TaskRunner {
       };
       fs.writeFileSync(path.join(ws, OUTPUT_FILE(task)), JSON.stringify(summary, null, 2), 'utf8');
       this.finish(task.id, 'done', summary, '');
+      return;
+    }
+    if (task.mode === 'interview') {
+      const p = parseInterviewParams(task.extra_prompt);
+      const finished = p.round >= p.maxRounds;
+      const report = {
+        schema_version: 1,
+        type: 'interview_turn',
+        round: p.round,
+        question: finished
+          ? ''
+          : `第 ${p.round} 轮问题：请结合项目讲讲你如何解决高并发问题？`,
+        evaluation: p.answer ? `回答思路清晰，但缺少量化数据支撑（第 ${p.round} 轮点评），建议补充指标。` : '',
+        hint: '用 STAR 法则组织回答，突出量化结果。',
+        finished,
+        overall_assessment: finished ? '模拟面试完成：整体表现良好，重点补充项目量化成果。' : '',
+        learnings: [],
+      };
+      fs.writeFileSync(path.join(ws, OUTPUT_FILE(task)), JSON.stringify(report, null, 2), 'utf8');
+      this.finish(task.id, 'done', report, '');
       return;
     }
     const report = {
@@ -303,6 +354,8 @@ export class TaskRunner {
     if (status === 'done' && result) {
       this.syncCandidateResult(taskId, result);
     }
+    const updated = rowById(this.db, 'tasks', taskId);
+    if (updated) emitTaskChanged(this.hub, this.db, updated);
   }
 
   // 招聘端：fit 任务完成时把评分/等级/摘要写回候选人，并把「待筛」推进为「已筛」
@@ -330,6 +383,34 @@ export class TaskRunner {
   }
 }
 
+// 沿 parent_task_id 链回溯，汇总此前所有 interview 轮次的提问/回答/点评
+export function buildInterviewHistory(db, task) {
+  const turns = [];
+  let cur = task.parent_task_id ? rowById(db, 'tasks', task.parent_task_id) : null;
+  while (cur) {
+    if (cur.mode === 'interview' && cur.result) {
+      try {
+        const r = JSON.parse(cur.result);
+        const p = parseInterviewParams(cur.extra_prompt);
+        turns.unshift({ round: r.round, question: r.question, answer: p.answer, evaluation: r.evaluation });
+      } catch {
+        /* 忽略非法轮次 */
+      }
+    }
+    cur = cur.parent_task_id ? rowById(db, 'tasks', cur.parent_task_id) : null;
+  }
+  if (turns.length === 0) return '';
+  const lines = ['# 模拟面试历史', ''];
+  for (const t of turns) {
+    lines.push(`## 第 ${t.round} 轮`, '');
+    lines.push(`面试官提问：${t.question}`, '');
+    if (t.answer) lines.push(`候选人回答：${t.answer}`, '');
+    if (t.evaluation) lines.push(`面试官点评：${t.evaluation}`, '');
+    lines.push('');
+  }
+  return lines.join('\n').trim();
+}
+
 export function buildPrompt(task, { resume, company }) {
   const parts = [];
   if (task.mode === 'crawl') {
@@ -338,6 +419,10 @@ export function buildPrompt(task, { resume, company }) {
       '请严格阅读并遵守工作区中的 AGENTS.md（采集员角色与输出 schema）。',
       '把最终结果写入 output/crawl_results.json（UTF-8，合法 JSON，schema_version=1）。',
       '不要修改工作区外的任何文件。'
+    );
+  } else if (task.mode === 'interview') {
+    parts.push(
+      buildInterviewPrompt(parseInterviewParams(task.extra_prompt), task.title)
     );
   } else if (task.mode === 'followup') {
     parts.push(

@@ -6,10 +6,13 @@ import type {
   Candidate,
   Company,
   MatchRow,
+  MockInterviewChain,
+  PrescreenRow,
   ProviderInfo,
   Resume,
   Settings,
   Task,
+  TrendPoint,
 } from './types';
 
 export class ApiError extends Error {
@@ -174,6 +177,20 @@ export const api = {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ message }),
       }).then((r) => r.task),
+    mockInterviewStart: (id: string, maxRounds?: number) =>
+      request<{ task: Task }>(`/api/tasks/${id}/mock-interview/start`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ max_rounds: maxRounds }),
+      }).then((r) => r.task),
+    mockInterviewAnswer: (id: string, answer: string) =>
+      request<{ task: Task }>(`/api/tasks/${id}/mock-interview/answer`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ answer }),
+      }).then((r) => r.task),
+    mockInterviewChain: (id: string) =>
+      request<MockInterviewChain>(`/api/tasks/${id}/mock-interview`).then((r) => r),
     log: (id: string) => request<{ log: string }>(`/api/tasks/${id}/log`).then((r) => r.log),
   },
   matches: {
@@ -181,6 +198,12 @@ export const api = {
       request<{ matches: MatchRow[] }>(
         `/api/matches${resumeId ? `?resume_id=${encodeURIComponent(resumeId)}` : ''}`
       ).then((r) => r.matches),
+    trend: (companyId: string, resumeId?: string) =>
+      request<{ trend: TrendPoint[] }>(
+        `/api/matches/trend?company_id=${encodeURIComponent(companyId)}${
+          resumeId ? `&resume_id=${encodeURIComponent(resumeId)}` : ''
+        }`
+      ).then((r) => r.trend),
   },
   crawl: {
     create: (body: {
@@ -212,6 +235,18 @@ export const api = {
           body: JSON.stringify(body),
         }
       ),
+    prescreen: (
+      taskId: string,
+      body: {
+        resume_id?: string;
+        filters?: { minK?: number | ''; maxK?: number | ''; city?: string; minScore?: number | '' };
+      }
+    ) =>
+      request<{ results: PrescreenRow[] }>(`/api/crawl/${taskId}/prescreen`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+      }).then((r) => r.results),
   },
   blacklist: {
     overview: (params?: { q?: string; city?: string }) => {

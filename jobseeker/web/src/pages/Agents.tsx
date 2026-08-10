@@ -1,10 +1,12 @@
 import { useEffect, useState } from 'react';
 import { api, ApiError } from '../api';
-import type { Agent } from '../types';
+import { useResourceStore } from '../store';
 import Markdown from '../components/Markdown';
 
 export default function Agents() {
-  const [agents, setAgents] = useState<Agent[]>([]);
+  const agents = useResourceStore((s) => s.agents);
+  const ensureLoaded = useResourceStore((s) => s.ensureLoaded);
+  const addAgent = useResourceStore((s) => s.addAgent);
   const [selectedId, setSelectedId] = useState<string>('');
   const [profile, setProfile] = useState('');
   const [profileDirty, setProfileDirty] = useState(false);
@@ -18,9 +20,9 @@ export default function Agents() {
   const [newModel, setNewModel] = useState('');
 
   async function refresh() {
-    const list = await api.agents.list();
-    setAgents(list);
-    if (!selectedId && list.length > 0) setSelectedId(list[0].id);
+    await ensureLoaded(['agents']);
+    const list = useResourceStore.getState().agents;
+    setSelectedId((cur) => cur || (list.length > 0 ? list[0].id : ''));
   }
 
   useEffect(() => {
@@ -46,7 +48,7 @@ export default function Agents() {
       const agent = await api.agents.create({ name: newName, provider: newProvider, model: newModel });
       setNewName('');
       setNewModel('');
-      await refresh();
+      addAgent(agent);
       setSelectedId(agent.id);
     } catch (err) {
       setError(err instanceof ApiError ? err.message : String(err));
@@ -95,6 +97,7 @@ export default function Agents() {
               <option value="codex">codex</option>
               <option value="cursor">cursor</option>
               <option value="claude">claude</option>
+              <option value="opencode">opencode</option>
             </select>
           </label>
           <label><span>模型（可选）</span><input value={newModel} onChange={(e) => setNewModel(e.target.value)} placeholder="留空用默认" /></label>

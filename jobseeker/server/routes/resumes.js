@@ -7,8 +7,9 @@ import { nowIso } from '../db.js';
 import { extractText, parseName } from '../lib/extract.js';
 import { UPLOADS_DIR } from '../lib/paths.js';
 
-export function resumesRouter(db) {
+export function resumesRouter(db, hub = null) {
   const r = Router();
+  const emitResource = () => hub?.emit('resource', { kind: 'resumes' });
   const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 10 * 1024 * 1024 } });
   const insert = db.prepare(
     `INSERT INTO resumes (id, name, text, source_file, created_at) VALUES (?, ?, ?, ?, ?)`
@@ -53,6 +54,7 @@ export function resumesRouter(db) {
       const id = randomUUID();
       insert.run(id, name, text, sourceFile, nowIso());
       const resume = db.prepare(`SELECT * FROM resumes WHERE id = ?`).get(id);
+      emitResource();
       res.status(201).json({ resume });
     } catch (e) {
       res.status(400).json({ error: `简历解析失败：${e.message}` });
@@ -64,6 +66,7 @@ export function resumesRouter(db) {
     if (!row) return res.status(404).json({ error: '简历不存在' });
     db.prepare(`UPDATE tasks SET resume_id = NULL WHERE resume_id = ?`).run(row.id);
     db.prepare(`DELETE FROM resumes WHERE id = ?`).run(row.id);
+    emitResource();
     res.json({ ok: true });
   });
 

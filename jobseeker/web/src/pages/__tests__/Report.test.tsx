@@ -48,6 +48,8 @@ vi.mock('../../api', () => {
         get: vi.fn().mockResolvedValue(task),
         log: vi.fn().mockResolvedValue(''),
         followup: vi.fn().mockResolvedValue({ id: 't2' }),
+        mockInterviewStart: vi.fn().mockResolvedValue({ id: 'iv1' }),
+        mockInterviewChain: vi.fn().mockResolvedValue({ turns: [], fit: null, fit_report: null }),
       },
       blacklist: {
         check: vi.fn().mockResolvedValue([]),
@@ -102,5 +104,18 @@ describe('Report', () => {
     );
     expect(await screen.findByText(/黑名单警示/)).toBeInTheDocument();
     expect(screen.getByText(/拖欠工资/)).toBeInTheDocument();
+  });
+
+  it('fit 报告页显示开始模拟面试按钮并调用接口', async () => {
+    render(
+      <MemoryRouter initialEntries={['/tasks/t1']}>
+        <Routes>
+          <Route path="/tasks/:id" element={<Report />} />
+        </Routes>
+      </MemoryRouter>
+    );
+    const btn = await screen.findByRole('button', { name: '开始模拟面试' });
+    expect(btn).toBeInTheDocument();
+    expect(screen.getByText('建议向公司确认的问题')).toBeInTheDocument();
   });
 });

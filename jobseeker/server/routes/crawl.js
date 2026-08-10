@@ -1,10 +1,13 @@
 import { Router } from 'express';
 import { randomUUID } from 'node:crypto';
 import { nowIso, rowById } from '../db.js';
+import { emitTaskChanged } from '../lib/serialize.js';
 import { parseCrawlParams } from '../lib/crawl.js';
+import { prescreenResults } from '../lib/prescreen.js';
 
-export function crawlRouter(db, queue) {
+export function crawlRouter(db, queue, hub = null) {
   const r = Router();
+  const emitResource = () => hub?.emit('resource', { kind: 'companies' });
   const insertCompany = db.prepare(
     `INSERT INTO companies (id, name, industry, stage, url, jd_text, source_file, created_at)
      VALUES (?, ?, ?, ?, ?, ?, '', ?)`
@@ -62,6 +65,7 @@ export function crawlRouter(db, queue) {
     );
     queue.enqueue();
     const task = rowById(db, 'tasks', id);
+    emitTaskChanged(hub, db, task);
     res.status(201).json({ task });
   });
 
@@ -130,11 +134,42 @@ export function crawlRouter(db, queue) {
       }
     }
     if (dispatched.length > 0) queue.enqueue();
+    if (imported.length > 0) emitResource();
+    for (const tid of dispatched) emitTaskChanged(hub, db, rowById(db, 'tasks', tid));
     res.json({
       imported: imported.map((c) => ({ id: c.id, name: c.name, industry: c.industry, stage: c.stage })),
       dispatched,
       message: dispatched.length > 0 ? `已导入 ${imported.length} 家公司并派发 ${dispatched.length} 个匹配任务` : `已导入 ${imported.length} 家公司`,
     });
+  });
+
+  // 采集结果智能预筛：按薪资/城市/匹配度打分并过滤
+  r.post('/:taskId/prescreen', (req, res) => {
+    const task = rowById(db, 'tasks', req.params.taskId);
+    if (!task) return res.status(404).json({ error: '任务不存在' });
+    if (task.mode !== 'crawl') return res.status(400).json({ error: '只有采集任务可以预筛' });
+    if (task.status !== 'done' || !task.result) {
+      return res.status(400).json({ error: '采集任务尚未完成' });
+    }
+    const result = JSON.parse(task.result);
+    const items = result.results ?? [];
+    if (items.length === 0) return res.json({ results: [] });
+
+    const resumeId = req.body?.resume_id ?? null;
+    let resumeText = null;
+    if (resumeId) {
+      const resume = rowById(db, 'resumes', resumeId);
+      if (!resume) return res.status(400).json({ error: '简历不存在' });
+      resumeText = resume.text;
+    }
+    const filters = {
+      minK: req.body?.filters?.minK,
+      maxK: req.body?.filters?.maxK,
+      city: req.body?.filters?.city,
+      minScore: req.body?.filters?.minScore,
+    };
+    const results = prescreenResults(items, resumeText, filters);
+    res.json({ results });
   });
 
   return r;

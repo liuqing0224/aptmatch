@@ -6,6 +6,7 @@ import { getDb, nowIso } from './db.js';
 import { TaskRunner } from './lib/runner.js';
 import { createQueue, recoverRunningTasks } from './lib/queue.js';
 import { getSettings } from './lib/settings.js';
+import { createEventHub } from './lib/events.js';
 import { DIST_DIR, ROOT_DIR } from './lib/paths.js';
 import { agentsRouter } from './routes/agents.js';
 import { resumesRouter } from './routes/resumes.js';
@@ -25,8 +26,9 @@ const HOST = process.env.HOST ?? '127.0.0.1';
 export function createApp({ db = getDb() } = {}) {
   seedDefaultAgent(db);
   const settings = () => getSettings(db);
-  const runner = new TaskRunner({ db, getSettings: settings });
-  const queue = createQueue({ db, runner, getSettings: settings });
+  const hub = createEventHub();
+  const runner = new TaskRunner({ db, getSettings: settings, hub });
+  const queue = createQueue({ db, runner, getSettings: settings, hub });
 
   recoverRunningTasks(db);
 
@@ -34,14 +36,29 @@ export function createApp({ db = getDb() } = {}) {
   app.use(express.json({ limit: '2mb' }));
 
   app.get('/api/health', (_req, res) => res.json({ ok: true, time: nowIso() }));
-  app.use('/api/agents', agentsRouter(db));
-  app.use('/api/resumes', resumesRouter(db));
-  app.use('/api/companies', companiesRouter(db));
-  app.use('/api/tasks', tasksRouter(db, runner, queue));
+  app.get('/api/events', (req, res) => {
+    res.writeHead(200, {
+      'Content-Type': 'text/event-stream',
+      'Cache-Control': 'no-cache',
+      Connection: 'keep-alive',
+      'X-Accel-Buffering': 'no',
+    });
+    res.write('retry: 2000\n\n');
+    hub.addClient(res);
+    const heartbeat = setInterval(() => res.write(': ping\n\n'), 15000);
+    req.on('close', () => clearInterval(heartbeat));
+  });
+  app.use('/api/agents', agentsRouter(db, hub));
+  app.use('/api/resumes', resumesRouter(db, hub));
+  app.use('/api/companies', companiesRouter(db, hub));
+  app.use('/api/tasks', tasksRouter(db, runner, queue, hub));
   app.use('/api/matches', matchesRouter(db));
   app.use('/api/settings', settingsRouter(db));
-  app.use('/api/crawl', crawlRouter(db, queue));
-  app.use('/api/blacklist', blacklistRouter(db, { getFetcher: () => createFetcher() }));
+  app.use('/api/crawl', crawlRouter(db, queue, hub));
+  app.use(
+    '/api/blacklist',
+    blacklistRouter(db, { getFetcher: () => createFetcher(), hub })
+  );
 
   seedDefaultBlacklistSource(db);
   // 启动后懒同步：首次运行的黑名单来源在后台拉取，失败不阻塞主流程

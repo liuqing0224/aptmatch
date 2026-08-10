@@ -1,5 +1,6 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { api } from '../api';
+import { subscribeEvents } from '../events';
 import type { BlacklistEntry, BlacklistSource } from '../types';
 
 function fmtTime(iso: string | null) {
@@ -20,7 +21,6 @@ export default function Blacklist() {
   const [error, setError] = useState('');
   const [expanded, setExpanded] = useState<Set<string>>(new Set());
   const [form, setForm] = useState({ owner: '', repo: '', name: '', branch: 'master' });
-  const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   const load = useCallback(async (opts?: { q?: string; city?: string }) => {
     try {
@@ -42,24 +42,13 @@ export default function Blacklist() {
     load();
   }, [load]);
 
+  // 同步状态变化（开始/完成）由服务端 SSE 推送，收到即刷新，无需轮询
   useEffect(() => {
-    if (syncing.length === 0) return;
-    timerRef.current = setInterval(async () => {
-      try {
-        const data = await api.blacklist.overview();
-        setSources(data.sources);
-        setEntries(data.entries);
-        setTotal(data.total);
-        setSyncing(data.syncing);
-        if (data.syncing.length === 0 && timerRef.current) clearInterval(timerRef.current);
-      } catch {
-        /* 轮询失败忽略 */
-      }
-    }, 3000);
-    return () => {
-      if (timerRef.current) clearInterval(timerRef.current);
-    };
-  }, [syncing.length > 0]);
+    const unsub = subscribeEvents((event) => {
+      if (event === 'blacklist') load({ q, city });
+    });
+    return unsub;
+  }, [load, q, city]);
 
   async function runSync(sourceId?: string) {
     setError('');

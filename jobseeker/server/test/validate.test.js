@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { validateReport, validateCrawlResults } from '../lib/validate.js';
+import { validateReport, validateCrawlResults, validateInterviewTurn } from '../lib/validate.js';
 
 function validReport() {
   return {
@@ -145,5 +145,60 @@ describe('validateCrawlResults', () => {
     const r = validateCrawlResults(validCrawl());
     expect(r.ok).toBe(true);
     expect(r.report.results[0].company_url).toBe('https://example.com');
+  });
+});
+
+describe('validateInterviewTurn', () => {
+  function validTurn() {
+    return {
+      schema_version: 1,
+      type: 'interview_turn',
+      round: 1,
+      question: '请先自我介绍',
+      evaluation: '',
+      hint: '',
+      finished: false,
+      overall_assessment: '',
+      learnings: [],
+    };
+  }
+
+  it('接受合法首轮', () => {
+    const r = validateInterviewTurn(validTurn());
+    expect(r.ok).toBe(true);
+    expect(r.report.type).toBe('interview_turn');
+    expect(r.report.round).toBe(1);
+  });
+
+  it('拒绝缺 type', () => {
+    const bad = validTurn();
+    delete bad.type;
+    expect(validateInterviewTurn(bad).ok).toBe(false);
+  });
+
+  it('拒绝缺 round 或非正整数', () => {
+    const bad1 = validTurn();
+    delete bad1.round;
+    expect(validateInterviewTurn(bad1).ok).toBe(false);
+    const bad2 = validTurn();
+    bad2.round = 0;
+    expect(validateInterviewTurn(bad2).ok).toBe(false);
+  });
+
+  it('拒绝缺 question', () => {
+    const bad = validTurn();
+    delete bad.question;
+    expect(validateInterviewTurn(bad).ok).toBe(false);
+  });
+
+  it('finished=true 时要求 overall_assessment', () => {
+    const bad = validTurn();
+    bad.finished = true;
+    bad.overall_assessment = '';
+    expect(validateInterviewTurn(bad).ok).toBe(false);
+    const good = validTurn();
+    good.finished = true;
+    good.overall_assessment = '整体表现良好';
+    expect(validateInterviewTurn(good).ok).toBe(true);
   });
 });

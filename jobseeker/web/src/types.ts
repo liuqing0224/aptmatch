@@ -3,7 +3,7 @@ export interface Agent {
   name: string;
   slug: string;
   role: string;
-  provider: 'codex' | 'cursor' | 'claude' | string;
+  provider: 'codex' | 'cursor' | 'claude' | 'opencode' | string;
   model: string;
   status: 'active' | 'paused' | string;
   created_at: string;
@@ -75,6 +75,37 @@ export interface FitReport {
   learnings: string[];
 }
 
+export interface InterviewTurnReport {
+  schema_version: number;
+  type: 'interview_turn';
+  round: number;
+  question: string;
+  evaluation: string;
+  hint: string;
+  finished: boolean;
+  overall_assessment: string;
+  learnings: string[];
+}
+
+export interface MockInterviewTurn {
+  task_id: string;
+  round: number;
+  question: string;
+  answer: string;
+  evaluation: string;
+  hint: string;
+  finished: boolean;
+  overall_assessment: string;
+  status: TaskStatus;
+  created_at: string;
+}
+
+export interface MockInterviewChain {
+  turns: MockInterviewTurn[];
+  fit: { id: string; title: string } | null;
+  fit_report: FitReport | null;
+}
+
 export interface CrawlItem {
   company_name: string;
   position_title: string;
@@ -97,6 +128,16 @@ export interface CrawlResults {
   learnings: string[];
 }
 
+export interface PrescreenRow {
+  index: number;
+  salary: { minK: number | null; maxK: number | null; raw: string } | null;
+  score: number | null;
+  city_ok: boolean;
+  salary_ok: boolean;
+  score_ok: boolean;
+  passed: boolean;
+}
+
 export type TaskStatus = 'queued' | 'running' | 'done' | 'failed' | 'cancelled';
 
 export interface Task {
@@ -106,7 +147,7 @@ export interface Task {
   parent_task_id: string | null;
   extra_prompt: string;
   status: TaskStatus;
-  result: FitReport | CrawlResults | null;
+  result: FitReport | CrawlResults | InterviewTurnReport | null;
   error: string;
   pid: number | null;
   created_at: string;
@@ -128,6 +169,15 @@ export interface MatchRow {
   summary: string;
   dimensions: Record<string, { label: string; score: number }>;
   created_at: string;
+}
+
+export interface TrendPoint {
+  task_id: string;
+  title: string;
+  created_at: string;
+  overall_score: number;
+  grade: string;
+  dims: Record<string, number>;
 }
 
 export interface BlacklistSource {

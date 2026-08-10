@@ -3,10 +3,10 @@ import { openDb } from '../db.js';
 import { getSettings, setSettings } from '../lib/settings.js';
 
 describe('settings', () => {
-  it('未显式配置时 defaultProvider 来自扫描检测（codex/cursor/claude 之一）', () => {
+  it('未显式配置时 defaultProvider 来自扫描检测（codex/cursor/claude/opencode 之一）', () => {
     const db = openDb(':memory:');
     const settings = getSettings(db);
-    expect(['codex', 'cursor', 'claude']).toContain(settings.defaultProvider);
+    expect(['codex', 'cursor', 'claude', 'opencode']).toContain(settings.defaultProvider);
     expect(settings.concurrency).toBe(1);
     expect(settings.timeoutMinutes).toBe(10);
   });

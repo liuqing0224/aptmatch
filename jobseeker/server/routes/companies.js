@@ -7,8 +7,9 @@ import { nowIso } from '../db.js';
 import { extractText } from '../lib/extract.js';
 import { UPLOADS_DIR } from '../lib/paths.js';
 
-export function companiesRouter(db) {
+export function companiesRouter(db, hub = null) {
   const r = Router();
+  const emitResource = () => hub?.emit('resource', { kind: 'companies' });
   const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 10 * 1024 * 1024 } });
   const insert = db.prepare(
     `INSERT INTO companies (id, name, industry, stage, url, jd_text, source_file, created_at)
@@ -51,6 +52,7 @@ export function companiesRouter(db) {
         nowIso()
       );
       const company = db.prepare(`SELECT * FROM companies WHERE id = ?`).get(id);
+      emitResource();
       res.status(201).json({ company });
     } catch (e) {
       res.status(400).json({ error: `职位描述解析失败：${e.message}` });
@@ -62,6 +64,7 @@ export function companiesRouter(db) {
     if (!row) return res.status(404).json({ error: '公司不存在' });
     db.prepare(`UPDATE tasks SET company_id = NULL WHERE company_id = ?`).run(row.id);
     db.prepare(`DELETE FROM companies WHERE id = ?`).run(row.id);
+    emitResource();
     res.json({ ok: true });
   });
 

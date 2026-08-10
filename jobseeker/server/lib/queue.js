@@ -1,4 +1,7 @@
-export function createQueue({ db, runner, getSettings, tickIntervalMs = 1000 }) {
+import { emitTaskChanged } from './serialize.js';
+import { rowById } from '../db.js';
+
+export function createQueue({ db, runner, getSettings, tickIntervalMs = 1000, hub = null }) {
   let timer = null;
 
   function runningCount() {
@@ -23,12 +26,14 @@ export function createQueue({ db, runner, getSettings, tickIntervalMs = 1000 }) 
     if (!task) return;
     const now = new Date().toISOString();
     db.prepare(`UPDATE tasks SET status = 'running', started_at = ? WHERE id = ?`).run(now, task.id);
+    emitTaskChanged(hub, db, { ...task, status: 'running', started_at: now });
     runner
       .run(task)
       .catch((err) => {
         db.prepare(
           `UPDATE tasks SET status = 'failed', error = ?, finished_at = ? WHERE id = ?`
         ).run(`调度错误：${err.message}`, new Date().toISOString(), task.id);
+        emitTaskChanged(hub, db, rowById(db, 'tasks', task.id));
       })
       .finally(() => {
         if (runningCount() < concurrency) tick();

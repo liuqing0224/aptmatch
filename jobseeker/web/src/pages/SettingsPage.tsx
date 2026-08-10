@@ -55,6 +55,7 @@ export default function SettingsPage() {
             <option value="codex">codex</option>
             <option value="cursor">cursor</option>
             <option value="claude">claude</option>
+            <option value="opencode">opencode</option>
           </select>
           <em className="hint">
             新建 agent 时的默认值；未显式设置时自动使用扫描检测到的本地 coding agent。
