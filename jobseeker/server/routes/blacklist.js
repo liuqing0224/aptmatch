@@ -6,8 +6,9 @@ import { checkCompany, listEntries, syncAll, syncSource } from '../lib/blacklist
 // 内存中的同步状态（避免并发重复同步）
 const syncing = new Set();
 
-export function blacklistRouter(db, { getFetcher } = {}) {
+export function blacklistRouter(db, { getFetcher, hub = null } = {}) {
   const r = Router();
+  const emit = (type) => hub?.emit('blacklist', { type, syncing: [...syncing] });
 
   function serializeSource(row) {
     if (!row) return null;
@@ -69,8 +70,11 @@ export function blacklistRouter(db, { getFetcher } = {}) {
       return res.status(409).json({ error: '所选来源正在同步中' });
     }
     res.json({ started: jobs.length, syncing: [...syncing] });
-    // 后台继续执行，结果由前端轮询 status 获取
-    Promise.allSettled(jobs).catch(() => {});
+    emit('sync');
+    // 后台继续执行，完成时推送事件，前端收到后刷新
+    Promise.allSettled(jobs)
+      .catch(() => {})
+      .finally(() => emit('updated'));
   });
 
   r.post('/sources', (req, res) => {
@@ -99,6 +103,7 @@ export function blacklistRouter(db, { getFetcher } = {}) {
       now
     );
     res.json({ source: serializeSource(rowById(db, id)) });
+    emit('updated');
   });
 
   r.patch('/sources/:id', (req, res) => {
@@ -125,6 +130,7 @@ export function blacklistRouter(db, { getFetcher } = {}) {
       db.prepare(`UPDATE blacklist_sources SET ${sets.join(', ')} WHERE id = ?`).run(...params);
     }
     res.json({ source: serializeSource(rowById(db, req.params.id)) });
+    emit('updated');
   });
 
   r.delete('/sources/:id', (req, res) => {
@@ -133,6 +139,7 @@ export function blacklistRouter(db, { getFetcher } = {}) {
     syncing.delete(row.id);
     db.prepare(`DELETE FROM blacklist_entries WHERE source_id = ?`).run(row.id);
     db.prepare(`DELETE FROM blacklist_sources WHERE id = ?`).run(row.id);
+    emit('updated');
     res.json({ ok: true });
   });
 

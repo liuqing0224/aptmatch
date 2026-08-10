@@ -1,4 +1,7 @@
+import { useEffect } from 'react';
 import { NavLink, Outlet } from 'react-router-dom';
+import { subscribeEvents, onEventSourceOpen } from '../events';
+import { useResourceStore, useTaskStore } from '../store';
 
 const navItems = [
   { to: '/board', label: '看板' },
@@ -11,6 +14,21 @@ const navItems = [
 ];
 
 export default function Layout() {
+  useEffect(() => {
+    const offEvents = subscribeEvents((event, data) => {
+      if (event === 'task' && data?.task) useTaskStore.getState().upsert(data.task);
+      else if (event === 'resource' && data?.kind) useResourceStore.getState().invalidate(data.kind);
+    });
+    const offOpen = onEventSourceOpen(() => {
+      useTaskStore.getState().refresh().catch(() => {});
+      useResourceStore.getState().refresh().catch(() => {});
+    });
+    return () => {
+      offEvents();
+      offOpen();
+    };
+  }, []);
+
   return (
     <div className="app-shell">
       <aside className="sidebar">

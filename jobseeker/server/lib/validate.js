@@ -144,8 +144,61 @@ function sanitize(r) {
   };
 }
 
-export function validateCrawlResults(raw) {
+export function validateInterviewTurn(raw) {
   const errors = [];
+  if (!raw || typeof raw !== 'object' || Array.isArray(raw)) {
+    return { ok: false, errors: ['面试轮次不是 JSON 对象'] };
+  }
+  if (raw.type !== 'interview_turn') {
+    errors.push('type 必须是 interview_turn');
+  }
+  if (typeof raw.schema_version !== 'number') {
+    errors.push('schema_version 缺失或非数字');
+  }
+  if (!Number.isInteger(raw.round) || raw.round < 1) {
+    errors.push('round 必须是正整数');
+  }
+  if (typeof raw.question !== 'string' || !raw.question.trim()) {
+    errors.push('question 缺失');
+  }
+  if (typeof raw.evaluation !== 'string') {
+    errors.push('evaluation 必须是字符串');
+  }
+  if (typeof raw.hint !== 'string') {
+    errors.push('hint 必须是字符串');
+  }
+  if (typeof raw.finished !== 'boolean') {
+    errors.push('finished 必须是布尔值');
+  }
+  if (raw.finished && (typeof raw.overall_assessment !== 'string' || !raw.overall_assessment.trim())) {
+    errors.push('finished=true 时 overall_assessment 必须非空');
+  }
+  if (typeof raw.overall_assessment !== 'string') {
+    errors.push('overall_assessment 必须是字符串');
+  }
+  for (const f of ['learnings']) {
+    if (raw[f] !== undefined && !Array.isArray(raw[f])) {
+      errors.push(`${f} 必须是数组`);
+    }
+  }
+  if (errors.length > 0) return { ok: false, errors };
+  return {
+    ok: true,
+    report: {
+      schema_version: 1,
+      type: 'interview_turn',
+      round: raw.round,
+      question: String(raw.question).trim(),
+      evaluation: String(raw.evaluation ?? '').trim(),
+      hint: String(raw.hint ?? '').trim(),
+      finished: Boolean(raw.finished),
+      overall_assessment: String(raw.overall_assessment ?? '').trim(),
+      learnings: (raw.learnings || []).map(String),
+    },
+  };
+}
+
+export function validateCrawlResults(raw) {  const errors = [];
   if (!raw || typeof raw !== 'object' || Array.isArray(raw)) {
     return { ok: false, errors: ['爬取结果不是 JSON 对象'] };
   }

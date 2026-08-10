@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { api, ApiError } from '../api';
 import type { Task } from '../types';
@@ -6,6 +6,9 @@ import RadarChart from '../components/RadarChart';
 import ScoreBadge from '../components/ScoreBadge';
 import StatusPill from '../components/StatusPill';
 import CrawlResultsView from '../components/CrawlResultsView';
+import MockInterview from '../components/MockInterview';
+import { subscribeTaskLog } from '../events';
+import { useTaskStore } from '../store';
 import type { BlacklistEntry, CrawlResults, FitReport } from '../types';
 
 function exportMarkdown(task: Task) {
@@ -65,47 +68,76 @@ function exportMarkdown(task: Task) {
 
 export default function Report() {
   const { id } = useParams<{ id: string }>();
-  const [task, setTask] = useState<Task | null>(null);
+  const task = useTaskStore((s) => (id ? s.tasks.find((t) => t.id === id) ?? null : null));
   const [error, setError] = useState('');
   const [log, setLog] = useState('');
   const [followup, setFollowup] = useState('');
   const [sending, setSending] = useState(false);
   const [blkHits, setBlkHits] = useState<BlacklistEntry[]>([]);
-  const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
-
-  const load = useCallback(async () => {
-    if (!id) return;
-    try {
-      const t = await api.tasks.get(id);
-      setTask(t);
-      setError('');
-      if (t.company?.name) {
-        try {
-          setBlkHits(await api.blacklist.check(t.company.name));
-        } catch {
-          /* 黑名单检查失败不影响报告展示 */
-        }
-      }
-      if (t.status === 'failed') setLog(await api.tasks.log(id));
-    } catch (e) {
-      setError(e instanceof Error ? e.message : String(e));
-    }
-  }, [id]);
+  const streamedRef = useRef(false);
 
   useEffect(() => {
-    load();
-    timerRef.current = setInterval(async () => {
-      const t = await api.tasks.get(id!);
-      setTask(t);
-      if (t.status === 'done' || t.status === 'failed' || t.status === 'cancelled') {
-        if (timerRef.current) clearInterval(timerRef.current);
-      }
-      if (t.status === 'failed') setLog(await api.tasks.log(id!));
-    }, 2500);
+    let cancelled = false;
+    if (id) {
+      api.tasks
+        .get(id)
+        .then((t) => {
+          if (!cancelled) useTaskStore.getState().upsert(t);
+        })
+        .catch((e) => {
+          if (!cancelled) setError(e instanceof Error ? e.message : String(e));
+        });
+    }
     return () => {
-      if (timerRef.current) clearInterval(timerRef.current);
+      cancelled = true;
     };
-  }, [id, load]);
+  }, [id]);
+
+  const companyName = task?.company?.name;
+  useEffect(() => {
+    if (!companyName) return;
+    let cancelled = false;
+    api.blacklist
+      .check(companyName)
+      .then((hits) => {
+        if (!cancelled) setBlkHits(hits);
+      })
+      .catch(() => {
+        /* 黑名单检查失败不影响报告展示 */
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [companyName]);
+
+  const status = task?.status;
+  const isBusy = status === 'queued' || status === 'running';
+  useEffect(() => {
+    if (!id || !isBusy) return;
+    streamedRef.current = true;
+    setLog('');
+    const unsub = subscribeTaskLog(id, (chunk) =>
+      setLog((prev) => {
+        const next = prev + chunk;
+        return next.length > 500 * 1024 ? next.slice(-500 * 1024) : next;
+      })
+    );
+    return unsub;
+  }, [id, isBusy]);
+
+  useEffect(() => {
+    if (!id || status !== 'failed' || streamedRef.current) return;
+    let cancelled = false;
+    api.tasks
+      .log(id)
+      .then((l) => {
+        if (!cancelled) setLog(l);
+      })
+      .catch(() => {});
+    return () => {
+      cancelled = true;
+    };
+  }, [id, status]);
 
   async function sendFollowup() {
     if (!followup.trim() || !id) return;
@@ -128,9 +160,10 @@ export default function Report() {
   const busy = task.status === 'queued' || task.status === 'running';
   const isCrawl = task.mode === 'crawl';
   const isCollect = task.mode === 'collect';
+  const isInterview = task.mode === 'interview';
   const crawlResults = isCrawl && r && 'results' in r ? (r as CrawlResults) : null;
   const collectResult = isCollect && r ? (r as { ok?: boolean; message?: string; imported?: number; skipped?: number; dispatched?: number }) : null;
-  const fitReport = !isCrawl && !isCollect && r ? (r as FitReport) : null;
+  const fitReport = !isCrawl && !isCollect && !isInterview && r ? (r as FitReport) : null;
 
   return (
     <div>
@@ -159,6 +192,7 @@ export default function Report() {
             : isCollect
               ? '采集进行中：Codex agent 正在调用 feishu-recruit-collect 采集飞书招聘候选人…'
               : '分析进行中：agent 正在阅读材料、调研公司并撰写报告…'}
+          {log && <pre className="log-box" style={{ marginTop: 12 }}>{log}</pre>}
         </div>
       )}
 
@@ -204,6 +238,8 @@ export default function Report() {
         </div>
       )}
 
+      {isInterview && <MockInterview taskId={task.id} />}
+
       {fitReport && (
         <>
           <div className="report-top">
@@ -212,6 +248,9 @@ export default function Report() {
               <p className="summary">{fitReport.summary}</p>
               <div className="report-actions">
                 <button className="btn" onClick={() => exportMarkdown(task)}>导出 Markdown</button>
+                <button className="btn" onClick={() => window.open(`/api/tasks/${task.id}/export.pdf`, '_blank')}>
+                  导出 PDF
+                </button>
               </div>
             </div>
             <div className="card radar-card">
@@ -289,6 +328,20 @@ export default function Report() {
                 </li>
               ))}
             </ol>
+            <button
+              className="btn btn-primary"
+              style={{ marginTop: 10 }}
+              onClick={async () => {
+                try {
+                  const t = await api.tasks.mockInterviewStart(task.id);
+                  window.location.href = `/tasks/${t.id}`;
+                } catch (e) {
+                  setError(e instanceof ApiError ? e.message : String(e));
+                }
+              }}
+            >
+              开始模拟面试
+            </button>
           </div>
 
           <div className="card">
@@ -314,7 +367,7 @@ export default function Report() {
         </>
       )}
 
-      {task.status === 'done' && !isCrawl && (
+      {task.status === 'done' && !isCrawl && !isInterview && (
         <div className="card followup-card">
           <h2>继续追问</h2>
           <p className="hint">基于这份报告继续让 agent 分析，例如「换一个岗位方向再对比」「按这个岗位修改我的简历侧重点」。</p>

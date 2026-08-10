@@ -1,8 +1,8 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { api } from '../api';
 import type { Task } from '../types';
 import TaskCard from '../components/TaskCard';
+import { useTaskStore } from '../store';
 
 type Filter = 'all' | 'active' | 'done' | 'dead';
 
@@ -22,24 +22,19 @@ function latest(arr: Task[]) {
 }
 
 export default function Board() {
-  const [tasks, setTasks] = useState<Task[]>([]);
+  const tasks = useTaskStore((s) => s.tasks);
+  const refresh = useTaskStore((s) => s.refresh);
   const [filter, setFilter] = useState<Filter>('all');
   const [error, setError] = useState('');
 
-  const refresh = useCallback(async () => {
-    try {
-      const list = await api.tasks.list();
-      setTasks(list);
-      setError('');
-    } catch (e) {
-      setError(e instanceof Error ? e.message : String(e));
-    }
-  }, []);
-
   useEffect(() => {
-    refresh();
-    const timer = setInterval(refresh, 3000);
-    return () => clearInterval(timer);
+    let cancelled = false;
+    refresh().catch((e) => {
+      if (!cancelled) setError(e instanceof Error ? e.message : String(e));
+    });
+    return () => {
+      cancelled = true;
+    };
   }, [refresh]);
 
   const counts = useMemo(() => {

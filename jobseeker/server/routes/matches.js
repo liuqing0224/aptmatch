@@ -1,4 +1,5 @@
 import { Router } from 'express';
+import { buildComparePdf } from '../lib/pdf.js';
 
 export function matchesRouter(db) {
   const r = Router();
@@ -46,6 +47,88 @@ export function matchesRouter(db) {
       };
     });
     res.json({ matches });
+  });
+
+  // 同公司历史趋势：该公司全部 done 任务按时间升序
+  r.get('/trend', (req, res) => {
+    const companyId = req.query.company_id;
+    const resumeId = req.query.resume_id;
+    if (!companyId) return res.status(400).json({ error: 'company_id 必填' });
+
+    let rows;
+    if (resumeId) {
+      rows = db
+        .prepare(
+          `SELECT * FROM tasks WHERE status = 'done' AND result IS NOT NULL AND mode NOT IN ('crawl','interview') AND company_id = ? AND resume_id = ? ORDER BY created_at ASC`
+        )
+        .all(companyId, resumeId);
+    } else {
+      rows = db
+        .prepare(
+          `SELECT * FROM tasks WHERE status = 'done' AND result IS NOT NULL AND mode NOT IN ('crawl','interview') AND company_id = ? ORDER BY created_at ASC`
+        )
+        .all(companyId);
+    }
+    const trend = rows.map((t) => {
+      const result = JSON.parse(t.result);
+      const dims = Object.fromEntries(
+        (result.dimensions ?? []).map((d) => [d.key, d.score])
+      );
+      return {
+        task_id: t.id,
+        title: t.title,
+        created_at: t.created_at,
+        overall_score: result.overall_score,
+        grade: result.grade,
+        dims,
+      };
+    });
+    res.json({ trend });
+  });
+
+  // 对比表导出 PDF
+  r.get('/export.pdf', (req, res) => {
+    const resumeId = req.query.resume_id;
+    let rows;
+    if (resumeId) {
+      rows = db
+        .prepare(
+          `SELECT * FROM tasks WHERE status = 'done' AND result IS NOT NULL AND mode NOT IN ('crawl','interview') AND resume_id = ? ORDER BY created_at DESC`
+        )
+        .all(resumeId);
+    } else {
+      rows = db
+        .prepare(
+          `SELECT * FROM tasks WHERE status = 'done' AND result IS NOT NULL AND mode NOT IN ('crawl','interview') ORDER BY created_at DESC`
+        )
+        .all();
+    }
+    const matches = rows.map((t) => {
+      const result = JSON.parse(t.result);
+      const company = db.prepare(`SELECT name FROM companies WHERE id = ?`).get(t.company_id);
+      const dims = Object.fromEntries(
+        (result.dimensions ?? []).map((d) => [d.key, { label: d.label, score: d.score }])
+      );
+      return {
+        task_id: t.id,
+        company_name: company?.name ?? '（已删除公司）',
+        overall_score: result.overall_score,
+        grade: result.grade,
+        dimensions: dims,
+      };
+    });
+    if (matches.length === 0) return res.status(404).json({ error: '暂无对比数据' });
+
+    const dimKeys = [...new Set(matches.flatMap((m) => Object.keys(m.dimensions)))];
+    const resume = resumeId ? db.prepare(`SELECT name FROM resumes WHERE id = ?`).get(resumeId) : null;
+    const doc = buildComparePdf(
+      matches,
+      dimKeys,
+      `跨公司对比${resume ? `：${resume.name}` : ''}`
+    );
+    res.setHeader('Content-Type', 'application/pdf');
+    res.setHeader('Content-Disposition', `attachment; filename="compare-${Date.now()}.pdf"`);
+    doc.pipe(res);
   });
 
   return r;

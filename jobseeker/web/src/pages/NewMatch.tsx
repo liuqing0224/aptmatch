@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { api, ApiError } from '../api';
-import type { Agent, Company, Resume } from '../types';
+import { useResourceStore } from '../store';
+import type { Resume } from '../types';
 
 function QuickNewResume({
   onCreated,
@@ -62,9 +63,13 @@ export default function NewMatch() {
   const navigate = useNavigate();
   const [tab, setTab] = useState<'fit' | 'crawl'>('fit');
 
-  const [resumes, setResumes] = useState<Resume[]>([]);
-  const [companies, setCompanies] = useState<Company[]>([]);
-  const [agents, setAgents] = useState<Agent[]>([]);
+  const resumes = useResourceStore((s) => s.resumes);
+  const companies = useResourceStore((s) => s.companies);
+  const agents = useResourceStore((s) => s.agents);
+  const ensureLoaded = useResourceStore((s) => s.ensureLoaded);
+  const refreshResources = useResourceStore((s) => s.refresh);
+  const addResume = useResourceStore((s) => s.addResume);
+
   const [resumeId, setResumeId] = useState('');
   const [agentId, setAgentId] = useState('');
   const [showNewResume, setShowNewResume] = useState(false);
@@ -81,40 +86,17 @@ export default function NewMatch() {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState('');
 
-  const refresh = async () => {
-    const [r, c, a] = await Promise.all([
-      api.resumes.list(),
-      api.companies.list(),
-      api.agents.list(),
-    ]);
-    setResumes(r);
-    setCompanies(c);
-    setAgents(a);
-  };
+  useEffect(() => {
+    ensureLoaded().catch(() => {});
+    const onFocus = () => refreshResources().catch(() => {});
+    window.addEventListener('focus', onFocus);
+    return () => window.removeEventListener('focus', onFocus);
+  }, [ensureLoaded, refreshResources]);
 
   useEffect(() => {
-    let cancelled = false;
-    (async () => {
-      const [r, c, a] = await Promise.all([
-        api.resumes.list(),
-        api.companies.list(),
-        api.agents.list(),
-      ]);
-      if (cancelled) return;
-      setResumes(r);
-      setCompanies(c);
-      setAgents(a);
-      setResumeId((cur) => cur || r[0]?.id || '');
-      setAgentId((cur) => cur || a[0]?.id || '');
-    })();
-    const onFocus = () => refresh().catch(() => {});
-    window.addEventListener('focus', onFocus);
-    return () => {
-      cancelled = true;
-      window.removeEventListener('focus', onFocus);
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+    setResumeId((cur) => cur || resumes[0]?.id || '');
+    setAgentId((cur) => cur || agents[0]?.id || '');
+  }, [resumes, agents]);
 
   async function submitFit(e: React.FormEvent) {
     e.preventDefault();
@@ -175,7 +157,7 @@ export default function NewMatch() {
   }
 
   function handleCreated(resume: Resume) {
-    setResumes((prev) => [resume, ...prev]);
+    addResume(resume);
     setResumeId(resume.id);
     setShowNewResume(false);
   }

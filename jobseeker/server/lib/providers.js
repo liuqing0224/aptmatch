@@ -8,12 +8,14 @@ export const PROVIDERS = [
   { id: 'codex', label: 'Codex', cmd: 'codex' },
   { id: 'cursor', label: 'Cursor', cmd: 'cursor' },
   { id: 'claude', label: 'Claude', cmd: 'claude' },
+  { id: 'opencode', label: 'OpenCode', cmd: 'opencode' },
 ];
 
-// PATH 中找不到时也会检查的常见安装位置（如 ~/.local/bin、~/.codex/bin）
+// PATH 中找不到时也会检查的常见安装位置（如 ~/.local/bin、~/.codex/bin、~/.opencode/bin）
 const FALLBACK_BINS = [
   path.join(os.homedir(), '.local', 'bin'),
   path.join(os.homedir(), '.codex', 'bin'),
+  path.join(os.homedir(), '.opencode', 'bin'),
   '/opt/homebrew/bin',
   '/usr/local/bin',
 ];
@@ -112,6 +114,12 @@ export function buildCommand(provider, { workspace, prompt, model }) {
       if (model) args.push('--model', model);
       args.push(prompt);
       return { cmd: 'claude', args, cwd: workspace };
+    }
+    case 'opencode': {
+      const args = ['run', '--dir', workspace, '--auto'];
+      if (model) args.push('--model', model);
+      args.push(prompt);
+      return { cmd: 'opencode', args, cwd: workspace };
     }
     default:
       throw new Error(`未知 provider: ${provider}`);

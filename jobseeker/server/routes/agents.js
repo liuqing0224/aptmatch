@@ -12,8 +12,9 @@ import {
 import { detectDefaultProvider } from '../lib/providers.js';
 import { DEFAULT_AGENT, PROFILE_MD, SKILLS } from '../seed/default-agent.js';
 
-export function agentsRouter(db) {
+export function agentsRouter(db, hub = null) {
   const r = Router();
+  const emitResource = () => hub?.emit('resource', { kind: 'agents' });
   const insert = db.prepare(
     `INSERT INTO agents (id, name, slug, role, provider, model, status, created_at, updated_at)
      VALUES (?, ?, ?, ?, ?, ?, 'active', ?, ?)`
@@ -47,6 +48,7 @@ export function agentsRouter(db) {
     const now = nowIso();
     insert.run(id, name.trim(), slug, role, provider, model, now, now);
     const agent = db.prepare(`SELECT * FROM agents WHERE id = ?`).get(id);
+    emitResource();
     res.status(201).json({ agent });
   });
 
@@ -64,6 +66,7 @@ export function agentsRouter(db) {
       agent.id
     );
     const updated = db.prepare(`SELECT * FROM agents WHERE id = ?`).get(agent.id);
+    emitResource();
     res.json({ agent: updated });
   });
 
@@ -72,6 +75,7 @@ export function agentsRouter(db) {
     if (!agent) return res.status(404).json({ error: 'agent 不存在' });
     db.prepare(`UPDATE tasks SET agent_id = NULL WHERE agent_id = ?`).run(agent.id);
     remove.run(agent.id);
+    emitResource();
     res.json({ ok: true });
   });
 

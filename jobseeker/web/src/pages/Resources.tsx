@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { api, ApiError } from '../api';
-import type { Company, Resume } from '../types';
+import { useResourceStore } from '../store';
 
 function FileInput({ onChange, disabled }: { onChange: (f: File | null) => void; disabled?: boolean }) {
   return (
@@ -15,8 +15,13 @@ function FileInput({ onChange, disabled }: { onChange: (f: File | null) => void;
 
 export default function Resources() {
   const [tab, setTab] = useState<'resumes' | 'companies'>('resumes');
-  const [resumes, setResumes] = useState<Resume[]>([]);
-  const [companies, setCompanies] = useState<Company[]>([]);
+  const resumes = useResourceStore((s) => s.resumes);
+  const companies = useResourceStore((s) => s.companies);
+  const ensureLoaded = useResourceStore((s) => s.ensureLoaded);
+  const addResume = useResourceStore((s) => s.addResume);
+  const addCompany = useResourceStore((s) => s.addCompany);
+  const removeResume = useResourceStore((s) => s.removeResume);
+  const removeCompany = useResourceStore((s) => s.removeCompany);
   const [error, setError] = useState('');
   const [busy, setBusy] = useState(false);
   const [parseBusy, setParseBusy] = useState(false);
@@ -35,16 +40,11 @@ export default function Resources() {
   const [cJd, setCJd] = useState('');
   const [cFile, setCFile] = useState<File | null>(null);
 
-  async function refresh() {
-    const [r, c] = await Promise.all([api.resumes.list(), api.companies.list()]);
-    setResumes(r);
-    setCompanies(c);
-  }
   useEffect(() => {
-    refresh().catch((e) => setError(e.message));
-  }, []);
+    ensureLoaded().catch((e) => setError(e.message));
+  }, [ensureLoaded]);
 
-  async function addResume(e: React.FormEvent) {
+  async function submitResume(e: React.FormEvent) {
     e.preventDefault();
     setBusy(true);
     setError('');
@@ -53,12 +53,12 @@ export default function Resources() {
     if (rText.trim()) form.append('text', rText);
     if (rFile) form.append('file', rFile);
     try {
-      await api.resumes.create(form);
+      const resume = await api.resumes.create(form);
+      addResume(resume);
       setRName('');
       setRText('');
       setRFile(null);
       setParseMsg('');
-      await refresh();
     } catch (err) {
       setError(err instanceof ApiError ? err.message : String(err));
     } finally {
@@ -84,7 +84,7 @@ export default function Resources() {
     }
   }
 
-  async function addCompany(e: React.FormEvent) {
+  async function submitCompany(e: React.FormEvent) {
     e.preventDefault();
     setBusy(true);
     setError('');
@@ -96,14 +96,14 @@ export default function Resources() {
     if (cJd.trim()) form.append('jd_text', cJd);
     if (cFile) form.append('file', cFile);
     try {
-      await api.companies.create(form);
+      const company = await api.companies.create(form);
+      addCompany(company);
       setCName('');
       setCIndustry('');
       setCStage('');
       setCUrl('');
       setCJd('');
       setCFile(null);
-      await refresh();
     } catch (err) {
       setError(err instanceof ApiError ? err.message : String(err));
     } finally {
@@ -128,7 +128,7 @@ export default function Resources() {
 
       {tab === 'resumes' && (
         <div className="grid-2">
-          <form className="card form" onSubmit={addResume}>
+          <form className="card form" onSubmit={submitResume}>
             <h2>新增简历</h2>
             <label><span>名称</span><input value={rName} onChange={(e) => setRName(e.target.value)} placeholder="例如：张三-前端-5年" /></label>
             <label><span>粘贴简历文本</span><textarea rows={8} value={rText} onChange={(e) => setRText(e.target.value)} placeholder="粘贴简历全文…" /></label>
@@ -146,7 +146,7 @@ export default function Resources() {
                   <span className="muted">{new Date(r.created_at).toLocaleDateString('zh-CN')}</span>
                 </div>
                 <p className="preview">{r.text.slice(0, 160)}{r.text.length > 160 ? '…' : ''}</p>
-                <button className="btn btn-sm btn-danger" onClick={async () => { await api.resumes.remove(r.id); refresh(); }}>删除</button>
+                <button className="btn btn-sm btn-danger" onClick={() => removeResume(r.id).catch((e) => setError(e.message))}>删除</button>
               </div>
             ))}
             {resumes.length === 0 && <div className="empty">暂无简历</div>}
@@ -156,7 +156,7 @@ export default function Resources() {
 
       {tab === 'companies' && (
         <div className="grid-2">
-          <form className="card form" onSubmit={addCompany}>
+          <form className="card form" onSubmit={submitCompany}>
             <h2>新增公司与岗位</h2>
             <label><span>公司名 *</span><input value={cName} onChange={(e) => setCName(e.target.value)} placeholder="公司名称" /></label>
             <div className="form-row">
@@ -179,7 +179,7 @@ export default function Resources() {
                 </div>
                 {c.url && <a className="company-url" href={c.url} target="_blank" rel="noreferrer">{c.url}</a>}
                 <p className="preview">{c.jd_text.slice(0, 160)}{c.jd_text.length > 160 ? '…' : ''}</p>
-                <button className="btn btn-sm btn-danger" onClick={async () => { await api.companies.remove(c.id); refresh(); }}>删除</button>
+                <button className="btn btn-sm btn-danger" onClick={() => removeCompany(c.id).catch((e) => setError(e.message))}>删除</button>
               </div>
             ))}
             {companies.length === 0 && <div className="empty">暂无公司资料</div>}

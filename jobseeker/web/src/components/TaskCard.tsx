@@ -39,6 +39,7 @@ export default function TaskCard({ task, onChanged }: { task: Task; onChanged: (
         {task.agent ? <span>agent：{task.agent.name}</span> : <span>agent：-</span>}
         {task.mode === 'followup' && <span className="tag">追问</span>}
         {task.mode === 'crawl' && <span className="tag">采集</span>}
+        {task.mode === 'interview' && <span className="tag">模拟面试</span>}
       </div>
       {task.resume && task.company && (
         <div className="task-route">
