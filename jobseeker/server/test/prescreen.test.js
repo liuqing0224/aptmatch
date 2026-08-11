@@ -55,6 +55,24 @@ describe('scoreMatch', () => {
     expect(s).toBeGreaterThan(0);
   });
 
+  it('中文简历与中文 JD 共享技术词时给出正分', () => {
+    const resume = '精通 React、TypeScript，熟悉前端性能优化与工程化实践';
+    const jd = '熟练掌握前端性能优化，React 经验丰富，负责大前端架构建设';
+    const s = scoreMatch(resume, jd);
+    expect(s).toBeGreaterThan(0);
+  });
+
+  it('高度相似的中文文本得分明显更高', () => {
+    const a = scoreMatch('资深前端工程师，负责前端性能优化与工程化建设', '资深前端工程师，负责前端性能优化与工程化建设');
+    const b = scoreMatch('资深前端工程师，负责前端性能优化与工程化建设', '负责后端 C++ 服务开发与数据库运维');
+    expect(a).toBeGreaterThan(50);
+    expect(b).toBeLessThan(a);
+  });
+
+  it('完全无关的中文内容得分为 0', () => {
+    expect(scoreMatch('简历内容无关', '完全不相关的职位描述')).toBe(0);
+  });
+
   it('空文本返回 0', () => {
     expect(scoreMatch('', 'jd')).toBe(0);
     expect(scoreMatch('resume', '')).toBe(0);
@@ -89,8 +107,9 @@ describe('prescreenResults', () => {
   });
 
   it('按匹配分过滤', () => {
-    const out = prescreenResults(results, resume, { minScore: 40 });
-    expect(out[0].passed).toBe(false); // 前端关键词重合度低
-    expect(out[2].passed).toBe(true); // React/TypeScript 高重合
+    const out = prescreenResults(results, resume, { minScore: 60 });
+    expect(out[0].passed).toBe(true); // React/前端 高重合（100）
+    expect(out[1].passed).toBe(false); // C++ 后端 与前端方向仅弱重合（50）
+    expect(out[2].passed).toBe(true); // React/TypeScript 高重合（100）
   });
 });

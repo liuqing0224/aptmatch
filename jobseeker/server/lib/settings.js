@@ -5,6 +5,9 @@ export const DEFAULT_SETTINGS = {
   defaultProvider: 'codex', // 兜底值；未显式配置时使用扫描检测到的本地 coding agent
   concurrency: 1,
   timeoutMinutes: 10,
+  maxRetries: 2, // 失败任务自动重试次数（超时/进程退出/调度错误等可重试类）
+  collectSkillDir: '', // feishu-recruit-collect skill 目录（留空则让 agent 自行定位）
+  collectCookiePath: '', // 飞书 Cookie 文件路径（留空则默认 /tmp/feishu_cookies.txt）
   dataDir: DATA_DIR,
 };
 
@@ -23,6 +26,9 @@ export function getSettings(db) {
     defaultProvider: overrides.defaultProvider ?? detectedDefault,
     concurrency: Number(overrides.concurrency ?? DEFAULT_SETTINGS.concurrency),
     timeoutMinutes: Number(overrides.timeoutMinutes ?? DEFAULT_SETTINGS.timeoutMinutes),
+    maxRetries: Number(overrides.maxRetries ?? DEFAULT_SETTINGS.maxRetries),
+    collectSkillDir: String(overrides.collectSkillDir ?? DEFAULT_SETTINGS.collectSkillDir),
+    collectCookiePath: String(overrides.collectCookiePath ?? DEFAULT_SETTINGS.collectCookiePath),
     dataDir: DEFAULT_SETTINGS.dataDir,
   };
 }

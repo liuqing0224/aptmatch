@@ -225,6 +225,9 @@ export interface Settings {
   defaultProvider: string;
   concurrency: number;
   timeoutMinutes: number;
+  maxRetries: number;
+  collectSkillDir: string;
+  collectCookiePath: string;
   dataDir: string;
 }
 

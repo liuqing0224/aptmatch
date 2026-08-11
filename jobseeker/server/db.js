@@ -54,6 +54,7 @@ function migrate(d) {
       jd_text TEXT NOT NULL,
       source_file TEXT DEFAULT '',
       kind TEXT NOT NULL DEFAULT 'company',
+      source_url TEXT DEFAULT '',
       created_at TEXT NOT NULL
     );
 
@@ -70,6 +71,7 @@ function migrate(d) {
       result TEXT,
       error TEXT DEFAULT '',
       pid INTEGER,
+      attempts INTEGER NOT NULL DEFAULT 0,
       created_at TEXT NOT NULL,
       started_at TEXT,
       finished_at TEXT
@@ -120,6 +122,15 @@ function migrate(d) {
   const companyCols = d.prepare(`PRAGMA table_info(companies)`).all().map((c) => c.name);
   if (!companyCols.includes('kind')) {
     d.exec(`ALTER TABLE companies ADD COLUMN kind TEXT NOT NULL DEFAULT 'company'`);
+  }
+  // 迁移：companies.source_url（旧库补列，用于采集结果按来源去重）
+  if (!companyCols.includes('source_url')) {
+    d.exec(`ALTER TABLE companies ADD COLUMN source_url TEXT DEFAULT ''`);
+  }
+  // 迁移：tasks.attempts（旧库补列，用于失败自动重试计数）
+  const taskCols = d.prepare(`PRAGMA table_info(tasks)`).all().map((c) => c.name);
+  if (!taskCols.includes('attempts')) {
+    d.exec(`ALTER TABLE tasks ADD COLUMN attempts INTEGER NOT NULL DEFAULT 0`);
   }
 
   d.exec(`

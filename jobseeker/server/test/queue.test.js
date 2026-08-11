@@ -59,6 +59,83 @@ describe('queue', () => {
     expect(maxActive).toBe(1);
   });
 
+  it('并发限制为 2 时批量出队并行执行', async () => {
+    const db = openDb(':memory:');
+    let active = 0;
+    let maxActive = 0;
+    const runner = {
+      async run(task) {
+        active += 1;
+        maxActive = Math.max(maxActive, active);
+        await new Promise((r) => setTimeout(r, 30));
+        active -= 1;
+        db.prepare(`UPDATE tasks SET status = 'done' WHERE id = ?`).run(task.id);
+      },
+    };
+    const q = createQueue({ db, runner, getSettings: () => ({ concurrency: 2 }), tickIntervalMs: 20 });
+    insertTask(db, 'a');
+    insertTask(db, 'b');
+    insertTask(db, 'c');
+    q.start();
+    await waitFor(() => ['a', 'b', 'c'].every((id) => statusOf(db, id) === 'done'), 5000);
+    q.stop();
+    expect(maxActive).toBe(2);
+  });
+
+  it('可重试的失败自动回队重试，直到达到次数上限', async () => {
+    const db = openDb(':memory:');
+    let runs = 0;
+    const runner = {
+      async run(task) {
+        runs += 1;
+        db.prepare(
+          `UPDATE tasks SET status = 'failed', error = '任务超时（超过 10 分钟）', finished_at = ? WHERE id = ?`
+        ).run(new Date().toISOString(), task.id);
+      },
+    };
+    const q = createQueue({
+      db,
+      runner,
+      getSettings: () => ({ concurrency: 1, maxRetries: 2 }),
+      tickIntervalMs: 20,
+    });
+    insertTask(db, 't1');
+    q.start();
+    await waitFor(() => {
+      const row = db.prepare(`SELECT status, attempts FROM tasks WHERE id = 't1'`).get();
+      return row.status === 'failed' && row.attempts === 2;
+    }, 5000);
+    await new Promise((r) => setTimeout(r, 100));
+    q.stop();
+    const row = db.prepare(`SELECT * FROM tasks WHERE id = 't1'`).get();
+    expect(row.attempts).toBe(2);
+    expect(runs).toBe(3); // 初始 1 次 + 自动重试 2 次
+  });
+
+  it('非重试类失败（如 schema 校验失败）不自动重试', async () => {
+    const db = openDb(':memory:');
+    const runner = {
+      async run(task) {
+        db.prepare(
+          `UPDATE tasks SET status = 'failed', error = '报告 schema 校验失败：summary 缺失', finished_at = ? WHERE id = ?`
+        ).run(new Date().toISOString(), task.id);
+      },
+    };
+    const q = createQueue({
+      db,
+      runner,
+      getSettings: () => ({ concurrency: 1, maxRetries: 2 }),
+      tickIntervalMs: 20,
+    });
+    insertTask(db, 't1');
+    q.start();
+    await waitFor(() => statusOf(db, 't1') === 'failed', 3000);
+    await new Promise((r) => setTimeout(r, 100));
+    q.stop();
+    const row = db.prepare(`SELECT attempts FROM tasks WHERE id = 't1'`).get();
+    expect(row.attempts).toBe(0);
+  });
+
   it('runner 抛错时任务标记为 failed', async () => {
     const db = openDb(':memory:');
     const runner = {
