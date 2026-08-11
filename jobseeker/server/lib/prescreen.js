@@ -50,21 +50,47 @@ export function cityMatch(location, query) {
 }
 
 const STOPWORDS = new Set([
-  '的', '了', '和', '与', '及', '或', '在', '是', '有', '对', '为', '于', '等',
   '我们', '以及', '进行', '要求', '负责', '相关', '经验', '能力', '岗位', '工作',
-  '我们', '具备', '优先', '加分', '职责', '任职', '以及', '一个', '一种',
   'the', 'a', 'an', 'and', 'or', 'of', 'to', 'in', 'for', 'with', 'on', 'at',
   'must', 'have', 'skills', 'years', 'experience', 'strong', 'good', 'ability',
 ]);
+
+// 中文场景下几乎无区分度的常见 2-gram（几乎每份 JD 都出现，会拉平分数）
+const CJK_STOPWORDS = new Set([
+  '公司', '岗位', '负责', '要求', '招聘', '工作', '经验', '相关', '进行', '我们',
+  '能够', '具备', '拥有', '良好', '并且', '以及', '至少', '优先', '加分', '职责',
+  '任职', '需要', '具有', '一年', '两年', '三年', '四年', '五年', '学历', '本科',
+  '硕士', '团队', '沟通', '管理', '支持', '参与', '完成', '提供', '主要',
+  '熟悉', '掌握', '了解', '使用', '编写', '业务', '日常',
+  // 高频通用技术 2-gram：几乎各类开发岗位都出现，跨方向命中会产生误报
+  '开发', '工程', '系统', '技术', '数据', '算法', '架构', '平台',
+  '设计', '测试', '服务', '维护', '优化', '建设', '实现', '落地',
+]);
+
+const CJK_RE = /\p{Script=Han}/u;
 
 function tokenize(text) {
   const tokens = new Map();
   if (!text) return tokens;
   const parts = String(text).toLowerCase().split(/[^\p{L}\p{N}]+/u);
   for (const t of parts) {
-    if (!t || t.length < 2) continue;
-    if (STOPWORDS.has(t)) continue;
-    tokens.set(t, (tokens.get(t) ?? 0) + 1);
+    if (!t) continue;
+    if (!CJK_RE.test(t)) {
+      // 拉丁/数字片段：保持单词级匹配
+      if (t.length < 2) continue;
+      if (STOPWORDS.has(t)) continue;
+      tokens.set(t, (tokens.get(t) ?? 0) + 1);
+      continue;
+    }
+    // 中文片段：生成重叠 2-gram 与 3-gram，避免整句被当成单个 token
+    for (let n = 2; n <= 3; n++) {
+      if (t.length < n) continue;
+      for (let i = 0; i + n <= t.length; i++) {
+        const gram = t.slice(i, i + n);
+        if (CJK_STOPWORDS.has(gram)) continue;
+        tokens.set(gram, (tokens.get(gram) ?? 0) + 1);
+      }
+    }
   }
   return tokens;
 }

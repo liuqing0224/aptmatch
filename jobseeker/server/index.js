@@ -5,6 +5,7 @@ import express from 'express';
 import { getDb, nowIso } from './db.js';
 import { TaskRunner } from './lib/runner.js';
 import { createQueue, recoverRunningTasks } from './lib/queue.js';
+import { cleanupOldJobs } from './lib/cleanup.js';
 import { getSettings } from './lib/settings.js';
 import { createEventHub } from './lib/events.js';
 import { DIST_DIR, ROOT_DIR } from './lib/paths.js';
@@ -31,6 +32,14 @@ export function createApp({ db = getDb() } = {}) {
   const queue = createQueue({ db, runner, getSettings: settings, hub });
 
   recoverRunningTasks(db);
+
+  // 启动时清理超龄任务的工作区与日志；内存库（测试用）跳过
+  if (db.name !== ':memory:') {
+    const cleaned = cleanupOldJobs(db);
+    console.log(
+      `[cleanup] 清理 ${cleaned.cleaned} 个任务，删除工作区 ${cleaned.workspaces} 个、日志 ${cleaned.logs} 个`
+    );
+  }
 
   const app = express();
   app.use(express.json({ limit: '2mb' }));

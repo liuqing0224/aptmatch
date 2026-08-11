@@ -24,6 +24,9 @@ export default function SettingsPage() {
       defaultProvider: settings.defaultProvider,
       concurrency: Number(settings.concurrency),
       timeoutMinutes: Number(settings.timeoutMinutes),
+      maxRetries: Number(settings.maxRetries),
+      collectSkillDir: settings.collectSkillDir,
+      collectCookiePath: settings.collectCookiePath,
     });
     setSettings(next);
     setNotice('设置已保存');
@@ -80,6 +83,35 @@ export default function SettingsPage() {
             value={settings.timeoutMinutes}
             onChange={(e) => setSettings({ ...settings, timeoutMinutes: Number(e.target.value) })}
           />
+        </label>
+        <label>
+          <span>失败自动重试次数</span>
+          <input
+            type="number"
+            min={0}
+            max={5}
+            value={settings.maxRetries}
+            onChange={(e) => setSettings({ ...settings, maxRetries: Number(e.target.value) })}
+          />
+          <em className="hint">超时 / 进程退出 / 调度错误等可重试失败会自动回队重试，达到上限才判失败。</em>
+        </label>
+        <label>
+          <span>飞书采集 skill 目录</span>
+          <input
+            value={settings.collectSkillDir}
+            placeholder="例如：/Users/you/.codex/skills/feishu-recruit-collect"
+            onChange={(e) => setSettings({ ...settings, collectSkillDir: e.target.value })}
+          />
+          <em className="hint">留空则提示 agent 自行定位 feishu-recruit-collect skill；配置后可避免硬编码路径失效。</em>
+        </label>
+        <label>
+          <span>飞书 Cookie 文件路径</span>
+          <input
+            value={settings.collectCookiePath}
+            placeholder="/tmp/feishu_cookies.txt"
+            onChange={(e) => setSettings({ ...settings, collectCookiePath: e.target.value })}
+          />
+          <em className="hint">留空默认 /tmp/feishu_cookies.txt。</em>
         </label>
         <label>
           <span>数据目录</span>

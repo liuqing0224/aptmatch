@@ -109,7 +109,7 @@ export function tasksRouter(db, runner, queue, hub = null) {
       return res.status(400).json({ error: '任务正在运行或排队中' });
     }
     db.prepare(
-      `UPDATE tasks SET status = 'queued', result = NULL, error = '', started_at = NULL, finished_at = NULL, pid = NULL WHERE id = ?`
+      `UPDATE tasks SET status = 'queued', result = NULL, error = '', attempts = 0, started_at = NULL, finished_at = NULL, pid = NULL WHERE id = ?`
     ).run(task.id);
     queue.enqueue();
     emitTaskChanged(hub, db, rowById(db, 'tasks', task.id));

@@ -35,9 +35,9 @@ export class TaskRunner {
       fs.mkdirSync(path.join(ws, 'input'), { recursive: true });
       fs.mkdirSync(path.join(ws, 'output'), { recursive: true });
       fs.mkdirSync(path.dirname(taskLogPath(task.id)), { recursive: true });
-      this.writeInputs(task, ws);
 
       const settings = this.getSettings();
+      this.writeInputs(task, ws, settings);
       if (USE_MOCK) {
         await this.runMock(task, ws);
         return;
@@ -48,7 +48,7 @@ export class TaskRunner {
     }
   }
 
-  writeInputs(task, ws) {
+  writeInputs(task, ws, settings = {}) {
     const resume = task.resume_id ? rowById(this.db, 'resumes', task.resume_id) : null;
     const company = task.company_id ? rowById(this.db, 'companies', task.company_id) : null;
 
@@ -121,7 +121,7 @@ export class TaskRunner {
 
     if (task.mode === 'collect') {
       const position = rowById(this.db, 'companies', task.company_id);
-      fs.writeFileSync(path.join(ws, 'prompt.txt'), buildCollectPrompt(task, { position }), 'utf8');
+      fs.writeFileSync(path.join(ws, 'prompt.txt'), buildCollectPrompt(task, { position, settings }), 'utf8');
       return;
     }
 
@@ -132,13 +132,66 @@ export class TaskRunner {
   async runProvider(task, ws, settings) {
     const agent = task.agent_id ? rowById(this.db, 'agents', task.agent_id) : null;
     const provider = agent?.provider || settings.defaultProvider;
-    const prompt = fs.readFileSync(path.join(ws, 'prompt.txt'), 'utf8');
-    const { cmd, args, cwd } = buildCommand(provider, {
-      workspace: ws,
-      prompt,
-      model: agent?.model || undefined,
-    });
+    const model = agent?.model || undefined;
+    let prompt = fs.readFileSync(path.join(ws, 'prompt.txt'), 'utf8');
 
+    // 校验失败自愈：最多额外重跑一次，把 schema 错误注入工作区让 agent 修正后再判成败
+    const selfHealLimit = 1;
+    for (let heal = 0; heal <= selfHealLimit; heal++) {
+      const { cmd, args, cwd } = buildCommand(provider, { workspace: ws, prompt, model });
+      const outcome = await this.runOnce(task, ws, settings, { cmd, args, cwd, provider });
+      if (outcome.kind !== 'report') return; // timeout/cancelled/badjson/exited 已在 runOnce 内收尾
+
+      if (task.mode === 'collect') {
+        const summary = outcome.report ?? {};
+        const ok = summary.ok === true;
+        this.finish(task.id, ok ? 'done' : 'failed', summary, ok ? '' : summary.error || '采集未成功');
+        return;
+      }
+
+      const v =
+        task.mode === 'crawl'
+          ? validateCrawlResults(outcome.report)
+          : task.mode === 'interview'
+            ? validateInterviewTurn(outcome.report)
+            : validateReport(outcome.report);
+      if (v.ok) {
+        if (task.agent_id) {
+          const agentRow = rowById(this.db, 'agents', task.agent_id);
+          if (agentRow) appendLearnings(agentRow.slug, v.report.learnings ?? []);
+        }
+        this.finish(task.id, 'done', v.report, '');
+        return;
+      }
+
+      if (heal < selfHealLimit) {
+        const outFile = OUTPUT_FILE(task);
+        const errors = v.errors.slice(0, 8).join('；');
+        fs.writeFileSync(
+          path.join(ws, 'input', 'validation_errors.txt'),
+          [
+            `# 上一份 ${outFile} 未通过 schema 校验`,
+            `错误：${errors}`,
+            `请阅读错误后，把修正后的完整报告重新写入 ${outFile}（UTF-8，合法 JSON）。`,
+          ].join('\n'),
+          'utf8'
+        );
+        // 清除上一份非法输出，确保自愈重跑不会误读旧文件
+        fs.rmSync(path.join(ws, outFile), { force: true });
+        prompt = [
+          prompt,
+          '',
+          `【校验未通过，请修正】你上一份 ${outFile} 不符合输出 schema，错误已写入 input/validation_errors.txt。请阅读后修正，把完整报告重新写入 ${outFile}。`,
+        ].join('\n\n');
+        continue;
+      }
+      this.finish(task.id, 'failed', null, `报告 schema 校验失败：${v.errors.slice(0, 8).join('；')}`);
+      return;
+    }
+  }
+
+  // 单次调用 provider CLI，监控直到产出报告/超时/取消/退出，并完成非 report 结局的收尾
+  async runOnce(task, ws, settings, { cmd, args, cwd, provider }) {
     const logPath = taskLogPath(task.id);
     const logStream = fs.createWriteStream(logPath, { flags: 'a' });
     logStream.write(`[${new Date().toISOString()}] $ ${cmd} ${args.join(' ')}\n`);
@@ -157,7 +210,7 @@ export class TaskRunner {
     } catch (err) {
       logStream.end();
       this.finish(task.id, 'failed', null, `无法启动 ${provider} CLI：${err.message}`);
-      return;
+      return { kind: 'exited', code: -1 };
     }
 
     child.stdout.on('data', (d) => {
@@ -207,7 +260,8 @@ export class TaskRunner {
       await sleep(1500);
     }
 
-    if (outcome.kind === 'timeout' || outcome.kind === 'cancelled') {
+    // 报告已产出也要结束进程，避免自愈重跑时两个 agent 同时写 output
+    if (outcome.kind === 'timeout' || outcome.kind === 'cancelled' || outcome.kind === 'report') {
       this.killGroup(child);
     }
     await sleep(200); // let log flush
@@ -215,48 +269,23 @@ export class TaskRunner {
 
     this.running.delete(task.id);
 
-    if (outcome.kind === 'report') {
-      if (task.mode === 'collect') {
-        const summary = outcome.report ?? {};
-        const ok = summary.ok === true;
-        this.finish(
-          task.id,
-          ok ? 'done' : 'failed',
-          summary,
-          ok ? '' : summary.error || '采集未成功'
-        );
-        return;
-      }
-      const v =
-        task.mode === 'crawl'
-          ? validateCrawlResults(outcome.report)
-          : task.mode === 'interview'
-            ? validateInterviewTurn(outcome.report)
-            : validateReport(outcome.report);
-      if (!v.ok) {
-        this.finish(task.id, 'failed', null, `报告 schema 校验失败：${v.errors.slice(0, 8).join('；')}`);
-        return;
-      }
-      if (task.agent_id) {
-        const agentRow = rowById(this.db, 'agents', task.agent_id);
-        if (agentRow) appendLearnings(agentRow.slug, v.report.learnings ?? []);
-      }
-      this.finish(task.id, 'done', v.report, '');
-      return;
-    }
     if (outcome.kind === 'timeout') {
       this.finish(task.id, 'failed', null, `任务超时（超过 ${settings.timeoutMinutes} 分钟）`);
-      return;
+      return { kind: 'finished' };
     }
     if (outcome.kind === 'cancelled') {
       this.finish(task.id, 'cancelled', null, '用户取消');
-      return;
+      return { kind: 'finished' };
     }
     if (outcome.kind === 'badjson') {
       this.finish(task.id, 'failed', null, `report.json 不是合法 JSON：${outcome.message}`);
-      return;
+      return { kind: 'finished' };
     }
-    this.finish(task.id, 'failed', null, `agent 进程退出（code=${outcome.code}）但未产出 report.json，请查看日志`);
+    if (outcome.kind === 'exited') {
+      this.finish(task.id, 'failed', null, `agent 进程退出（code=${outcome.code}）但未产出 report.json，请查看日志`);
+      return { kind: 'finished' };
+    }
+    return outcome; // { kind: 'report', report }
   }
 
   async runMock(task, ws) {
@@ -449,24 +478,32 @@ export function buildPrompt(task, { resume, company }) {
   return parts.join('\n\n');
 }
 
-export function buildCollectPrompt(task, { position }) {
+export function buildCollectPrompt(task, { position, settings = {} }) {
   const positionId = task.company_id ?? '';
   const name = position?.name || '未知职位';
+  const skillDir = String(settings?.collectSkillDir ?? '').trim();
+  const cookiePath = String(settings?.collectCookiePath ?? '').trim() || '/tmp/feishu_cookies.txt';
+  const skillMd = skillDir
+    ? path.join(skillDir, 'SKILL.md')
+    : '（未配置，请在设置页填写 feishu-recruit-collect skill 目录）';
+  const scriptPath = skillDir
+    ? path.join(skillDir, 'scripts', 'feishu-collect.mjs')
+    : 'feishu-collect.mjs（未找到 skill 目录，需先在设置页配置）';
   return [
     '任务：通过 feishu-recruit-collect skill 为 AptMatch 招聘端执行飞书招聘候选人采集，并自动导入。',
     '',
     `背景：目标职位「${name}」（position_id=${positionId}）；AptMatch 服务运行在 http://127.0.0.1:8787。`,
-    '请先阅读 /Users/l/.codex/skills/feishu-recruit-collect/SKILL.md，按其流程与约束执行。',
+    `请先阅读 ${skillMd}，按其流程与约束执行。`,
     '',
     '执行步骤：',
-    '1. 检查 Cookie 文件 /tmp/feishu_cookies.txt 是否存在；不存在则停止，写入 output/collect_result.json：',
-    '   {"ok":false,"error":"缺少飞书 Cookie 文件 /tmp/feishu_cookies.txt，请先在浏览器登录飞书招聘并复制 Cookie 头"}',
+    `1. 检查 Cookie 文件 ${cookiePath} 是否存在；不存在则停止，写入 output/collect_result.json：`,
+    `   {"ok":false,"error":"缺少飞书 Cookie 文件 ${cookiePath}，请先在浏览器登录飞书招聘并复制 Cookie 头"}`,
     `2. 运行采集脚本（必须带 --import --position-id ${positionId}）：`,
-    '   node /Users/l/.codex/skills/feishu-recruit-collect/scripts/feishu-collect.mjs \\',
-    '     --cookie-file /tmp/feishu_cookies.txt --out-dir /tmp/feishu_api \\',
+    `   node ${scriptPath} \\`,
+    `     --cookie-file ${cookiePath} --out-dir /tmp/feishu_api \\`,
     `     --import --position-id ${positionId}`,
     '3. 若脚本报 Cookie 失效（list_v2 返回 code!=0 或网络错误）：停止并写入 output/collect_result.json：',
-    '   {"ok":false,"error":"飞书 Cookie 已失效，请在浏览器重新登录并复制 Cookie 头到 /tmp/feishu_cookies.txt"}',
+    `   {"ok":false,"error":"飞书 Cookie 已失效，请在浏览器重新登录并复制 Cookie 头到 ${cookiePath}"}`,
     '4. 采集并导入成功后，汇总写入 output/collect_result.json：',
     '   {"ok":true,"imported":<数量>,"skipped":<跳过数>,"dispatched":<派发的筛选任务数>,"message":"一句中文总结"}',
     '',
